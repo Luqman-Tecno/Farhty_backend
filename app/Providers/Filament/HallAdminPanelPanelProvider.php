@@ -27,7 +27,7 @@ class HallAdminPanelPanelProvider extends PanelProvider
     {
         return $panel
             ->id('hallAdminPanel')
-            ->path('/')
+            ->path('/HallAdmin')
             ->login()
             ->font('cairo')
             ->colors([

@@ -13,3 +13,13 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
+Route::view('/signup', 'livewire.sign-up-screen');
+
+Route::get('/',function (){
+    return view('livewire.home-screen');
+} )->name('home');
+Route::get('/offers',)->name('offers');
+Route::get('/discount-offers', )->name('discount-offers');
+Route::get('/about', )->name('about');
+Route::get('/orders', )->name('orders');
+Route::get('/profile', )->name('profile');
