@@ -7,6 +7,7 @@
     @vite('resources/css/app.css')
     <title>{{ config('app.name', 'Laravel') }}</title>
     @livewireStyles
+    @filamentStyles
 </head>
 <body class="font-sans antialiased">
 <div class="min-h-screen bg-gray-100 font-cairo">
@@ -17,6 +18,7 @@
     </main>
 </div>
 
+@filamentScripts
 @livewireScripts
 @vite('resources/js/app.js')
 </body>

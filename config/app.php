@@ -197,6 +197,8 @@ return [
         App\Providers\Filament\HallAdminPanelPanelProvider::class,
         App\Providers\Filament\CustomerPanelPanelProvider::class,
         App\Providers\RouteServiceProvider::class,
+        App\Providers\FortifyServiceProvider::class,
+        App\Providers\JetstreamServiceProvider::class,
 
     ],
 

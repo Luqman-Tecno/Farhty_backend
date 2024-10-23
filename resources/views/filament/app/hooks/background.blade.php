@@ -1,6 +1,6 @@
 <div class="fixed w-screen h-screen z-[-1]">
     <div class="absolute w-full h-full backdrop-blur-md"></div>
-    <svg class="w-full h-full dark:hidden" xmlns="http://www.w3.org/2000/svg">
+    <svg class="w-full h-full" xmlns="http://www.w3.org/2000/svg">
         <mask id="b" x="0" y="0" width="2000" height="1400">
             <path fill="url(#a)" d="M0 0h2000v1400H0z" />
         </mask>
@@ -2437,7 +2437,7 @@
             </radialGradient>
         </defs>
     </svg>
-    <svg class="w-full h-full hidden dark:block" xmlns="http://www.w3.org/2000/svg">
+    <svg class="w-full h-full hidden" xmlns="http://www.w3.org/2000/svg">
         <mask id="b" x="0" y="0" width="2000" height="1400">
             <path fill="url(#a)" d="M0 0h2000v1400H0z" />
         </mask>

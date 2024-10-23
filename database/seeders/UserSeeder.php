@@ -16,7 +16,7 @@ class UserSeeder extends Seeder
      */
     public function run(): void
     {
-        $role = Role::findOrCreate('Super Admin');
+
 
         $user1 = User::firstOrCreate(
             ['email' => 'admin@admin.com'],
@@ -27,7 +27,7 @@ class UserSeeder extends Seeder
             ]
         );
 
-        $user1->assignRole($role);
+
 
 
     }
