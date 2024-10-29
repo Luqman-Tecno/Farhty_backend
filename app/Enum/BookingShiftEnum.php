@@ -21,6 +21,14 @@ enum BookingShiftEnum: string implements HasLabel
             self::FULL_DAY => 'اليوم كله',
         };
     }
-
+    public static function fromValue(string $value): self
+    {
+        return match($value) {
+            'day' =>  self::DAY,
+            'night' => self::NIGHT,
+            'full_day' => self::FULL_DAY,
+            default => throw new \ValueError("Invalid shift value: {$value}")
+        };
+    }
 
 }

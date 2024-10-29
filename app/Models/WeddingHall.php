@@ -40,4 +40,9 @@ class WeddingHall extends Model
     {
         return $this->belongsTo(City::class);
     }
+
+    public function services(): HasMany
+    {
+        return $this->hasMany(Services::class, 'wedding_hall_id');
+    }
 }

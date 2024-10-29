@@ -6,14 +6,14 @@ use App\Models\City;
 use App\Models\WeddingHall;
 use Livewire\Component;
 
-class Offers extends Component
+class DescoutOffers extends Component
 {
     public $priceRange = '';
     public $capacity = '';
     public $cityId = '';
     public $region = '';
     public $cities; // Make sure this is public
-    public $halls;
+    public $offers;
 
     public $sortField = 'shift_prices';
     public $sortDirection = 'asc';
@@ -79,6 +79,6 @@ class Offers extends Component
 
     public function render()
     {
-        return view('livewire.offers')->layout('layouts.app');
+        return view('livewire.descout-offers')->layout('layouts.app');
     }
 }

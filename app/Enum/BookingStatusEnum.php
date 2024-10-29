@@ -26,4 +26,14 @@ enum BookingStatusEnum: string implements HasLabel
             self::ON_REVIEW => 'قيد المراجعة',
         };
     }
+    public static function fromValue(string $value): self
+    {
+        return match($value) {
+            'Booked' =>  self::Booked,
+            'Cancelled' => self::Cancelled,
+            'Pending' => self::Pending,
+            'Checkout' => self::CHECKOUT,
+            default => throw new \ValueError("Invalid shift value: {$value}")
+        };
+    }
 }

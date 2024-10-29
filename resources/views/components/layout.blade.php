@@ -9,14 +9,15 @@
     @livewireStyles
     @filamentStyles
 </head>
-<body class="font-sans antialiased">
-<div class="min-h-screen bg-gray-100 font-cairo">
-    @livewire('nav-bar')
+<body class=" antialiased">
 
-    <main>
+<div class="min-h-screen bg-gray-100 font-cairo" dir="rtl">
+    <livewire:nav-bar/>
+    <main  dir="rtl">
         {{ $slot }}
     </main>
 </div>
+
 
 @filamentScripts
 @livewireScripts

@@ -18,7 +18,7 @@ class Booking extends Model
         'end_time',
         'total_cost',
         'deposit_paid',
-        'status',
+        'status','shift', 'deposit_cost', 'children_count'
     ];
 
     protected $casts = [

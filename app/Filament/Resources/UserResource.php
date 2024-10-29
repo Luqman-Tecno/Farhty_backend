@@ -26,6 +26,8 @@ class UserResource extends Resource
     protected static ?string $slug = 'users';
 
     protected static ?string $navigationLabel = 'ادارة المستخدمين';
+    protected static ?string $modelLabel = 'مستخدم';
+    protected static ?string $pluralModelLabel = 'المستخدمين';
     protected static ?string $navigationGroup = 'العمليات';
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 
@@ -36,7 +38,7 @@ class UserResource extends Resource
                 TextInput::make('name')->label('الاسم')
                     ->required(),
                 TextInput::make('email')->label('البريد الالكتروني')
-                    ->required()->unique(fn(string $context): bool => $context === 'create'),
+                    ->required(),
                 TextInput::make('password')->label("كلمة المرور")
                     ->password()
                     ->rule(Password::default())
@@ -63,11 +65,15 @@ class UserResource extends Resource
     {
         return $table
             ->columns([
-                TextColumn::make('name')
+                TextColumn::make('name')->label('الاسم')
                     ->searchable()
                     ->sortable(),
 
-                TextColumn::make('email')
+                TextColumn::make('email')->label('الايميل')
+                    ->searchable()
+                    ->sortable(),
+
+                TextColumn::make('type')->label('الدور')
                     ->searchable()
                     ->sortable(),
             ])

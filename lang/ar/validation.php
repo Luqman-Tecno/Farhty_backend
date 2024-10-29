@@ -248,6 +248,7 @@ return [
         'color' => 'الون ',
         'background_type' => 'نوع الخلفية',
         'Category' => 'الصنف',
+
     ],
 
     'values' => [
