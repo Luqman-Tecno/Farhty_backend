@@ -10,21 +10,12 @@
                     </svg>
                 </button>
                 <!-- Mobile Logo -->
-                <div class="text-center text-purple-900">
+                <div class="text-center text-purple-900  ">
                     <div class="text-2xl font-normal">فرحتي</div>
                     <div class="text-2xl font-semibold">Farhty</div>
                 </div>
                 <!-- Mobile Cart Icon -->
-                @if (Auth::check())
-                    <a href="{{ route('orders') }}" class="text-purple-900">
-                        <div class="relative">
-                            <i class="fas fa-shopping-cart text-2xl"></i>
-                            <span class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs">
-                            {{ $cartCount }}
-                        </span>
-                        </div>
-                    </a>
-                @endif
+           
             </div>
 
             <!-- Desktop Navigation -->
@@ -46,14 +37,14 @@
                         </a>
                     </li>
                     <li>
-                        <a href="{{ route('offers/discount') }}" class="font-bold text-xl text-purple-900 hover:text-purple-700 transition-colors duration-200 py-2 inline-block hover:border-b-2 hover:border-purple-900 {{ request()->routeIs('ponude-popusta') ? 'border-b-2 border-purple-600' : '' }}">
+                        <a href="{{ route('offer.sale') }}" class="font-bold text-xl text-purple-900 hover:text-purple-700 transition-colors duration-200 py-2 inline-block hover:border-b-2 hover:border-purple-900 {{ request()->routeIs('ponude-popusta') ? 'border-b-2 border-purple-600' : '' }}" wire:navigate>
                             عروض التخفيض
                         </a>
                     </li>
                 </ul>
 
                 <!-- Logo -->
-                <div class="flex flex-col items-center text-purple-900 relative -bottom-7 rounded-b-3xl bg-gray-100 py-4 px-8">
+                <div class="flex flex-col items-center text-purple-900  relative -bottom-7 rounded-b-3xl bg-gray-100 py-4 px-8">
                     <span class="text-4xl font-normal">فرحتي</span>
                     <span class="text-4xl font-semibold py-2">Farhty</span>
                 </div>
@@ -62,22 +53,26 @@
                 <ul class="flex items-center space-x-8 space-x-reverse">
                     <li>
                         <a href="{{ route('about') }}"
-                           class="font-bold text-xl text-purple-900 hover:text-purple-700 transition-colors duration-200 py-2 inline-block hover:border-b-2 hover:border-purple-900 {{ request()->routeIs('about') ? 'border-b-2 border-purple-600' : '' }}">
+                           class="font-bold text-xl text-purple-900 hover:text-purple-700 transition-colors duration-200 py-2 inline-block hover:border-b-2 hover:border-purple-900 {{ request()->routeIs('about') ? 'border-b-2 border-purple-600' : '' }}" wire:navigate>
                             حول الموقع
                         </a>
                     </li>
                     @if (Auth::check())
-                        <!-- Orders Button -->
                         <li>
-                            <a href="{{ route('orders') }}"
-                               class="flex items-center relative group gap-2 bg-gradient-to-r from-purple-600 to-purple-800 text-white px-4 py-2 rounded-full hover:opacity-90 transition-opacity">
-                                <div class="p-2 bg-purple-600 rounded-full hover:bg-purple-700 transition-colors">
-                                    <i class="fas fa-shopping-cart text-white text-xl"></i>
-                                    <span class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs">
-                                        {{ $cartCount }}
-                                    </span>
+                            <a href="{{ route('orders') }}" class="relative group" wire:navigate>
+                                <div class="flex items-center gap-3 bg-gradient-to-r from-purple-600 to-purple-800 text-white px-5 py-2.5 rounded-full hover:shadow-lg transform hover:-translate-y-0.5 transition-all">
+                                    <div class="relative">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                                        </svg>
+                                        @if($cartCount > 0)
+                                            <span class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs animate-pulse">
+                                                {{ $cartCount }}
+                                            </span>
+                                        @endif
+                                    </div>
+                                    <span class="font-medium">الـطـلبـات</span>
                                 </div>
-                                <span>الـطـلبـات</span>
                             </a>
                         </li>
                     @endif
@@ -153,16 +148,27 @@
 
         <!-- Mobile Menu -->
         <div x-show="mobileMenuOpen"
+             x-on:click.outside="mobileMenuOpen = false"
+             x-on:dblclick="mobileMenuOpen = false"
              class="lg:hidden bg-white border-t"
              wire:transition>
             <div class="px-4 pt-2 pb-3 space-y-1">
                 <a href="{{ route('home') }}" class="block px-3 py-2 text-base font-medium text-purple-900 hover:bg-gray-50 hover:text-purple-700 rounded-md" wire:navigate>الصفحة الرئيسية</a>
                 <a href="{{ route('offers') }}" class="block px-3 py-2 text-base font-medium text-purple-900 hover:bg-gray-50 hover:text-purple-700 rounded-md" wire:navigate>العروض</a>
-                <a href="{{ route('offers/discount') }}" class="block px-3 py-2 text-base font-medium text-purple-900 hover:bg-gray-50 hover:text-purple-700 rounded-md">عروض التخفيض</a>
+                <a href="{{ route('offer.sale') }}" class="block px-3 py-2 text-base font-medium text-purple-900 hover:bg-gray-50 hover:text-purple-700 rounded-md">عروض التخفيض</a>
                 <a href="{{ route('about') }}" class="block px-3 py-2 text-base font-medium text-purple-900 hover:bg-gray-50 hover:text-purple-700 rounded-md">حول الموقع</a>
                 @if (Auth::check())
                     <a href="{{ route('orders') }}" class="block px-3 py-2 text-base font-medium text-purple-900 hover:bg-gray-50 hover:text-purple-700 rounded-md">سلة التسوق</a>
-                    <a href="{{ route('orders') }}" class="block px-3 py-2 text-base font-medium text-purple-900 hover:bg-gray-50 hover:text-purple-700 rounded-md">الـطـلبـات</a>
+                    <div class="relative">
+                        <a href="{{ route('orders') }}" class="block px-3 py-2 text-base font-medium text-purple-900 hover:bg-gray-50 hover:text-purple-700 rounded-md">
+                            الـطـلبـات
+                            @if($cartCount > 0)
+                                <span class="absolute left-3 top-1/2 -translate-y-1/2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs animate-pulse">
+                                    {{ $cartCount }}
+                                </span>
+                            @endif
+                        </a>
+                    </div>
                     <a href="{{ route('profile.show') }}" class="block px-3 py-2 text-base font-medium text-purple-900 hover:bg-gray-50 hover:text-purple-700 rounded-md">الملف الشخصي</a>
                     <form method="POST" action="{{ route('logout') }}">
                         @csrf

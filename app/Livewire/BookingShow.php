@@ -18,7 +18,7 @@ class BookingShow extends Component
 
     public function mount(Booking $booking)
     {
-        $this->booking = $booking;
+        $this->booking = $booking->load(['weddingHall.city']);
     }
 
     public function cancelBooking()
@@ -26,6 +26,7 @@ class BookingShow extends Component
         if ($this->booking->status === BookingStatusEnum::Pending->value) {
             $this->booking->update(['status' => BookingStatusEnum::Cancelled->value]);
             session()->flash('message', 'تم إلغاء الحجز بنجاح');
+            return redirect()->route('bookings.show', $this->booking);
         } else {
             session()->flash('error', 'لا يمكن إلغاء هذا الحجز في وضعه الحالي');
         }
@@ -41,6 +42,7 @@ class BookingShow extends Component
             default => 'bg-gray-100 text-gray-800'
         };
     }
+
 
     public function render()
     {

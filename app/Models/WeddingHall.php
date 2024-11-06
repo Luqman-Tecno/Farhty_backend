@@ -2,38 +2,46 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class WeddingHall extends Model
 {
-    use HasFactory;
+    use SoftDeletes;
 
-    protected $fillable = ['hall_name', 'capacity', 'latitude', 'longitude', 'city_id', 'shift_prices',
-        'price_per_child', 'region', 'deposit_price', 'amenities', 'user_id', 'images'];
+    protected $fillable = [
+        'hall_name',
+        'capacity',
+        'latitude',
+        'longitude',
+        'city_id',
+        'region',
+        'shift_prices',
+        'deposit_price',
+        'price_per_child',
+        'amenities',
+        'user_id',
+        'images',
+        'description',
+        'status'
+    ];
 
     protected $casts = [
         'shift_prices' => 'array',
+        'amenities' => 'array',
         'images' => 'array',
+        'status' => 'boolean'
     ];
-
-    public function getShiftPrice($shift)
+    public function services(): HasMany
     {
-        return $this->shift_prices[$shift] ?? null;
+        return $this->hasMany(Services::class);
     }
 
-    public function setShiftPrice($shift, $price)
+    public function offerSales(): HasMany
     {
-        $prices = $this->shift_prices;
-        $prices[$shift] = $price;
-        $this->shift_prices = $prices;
-    }
-
-    public function user(): BelongsTo
-    {
-        return $this->belongsTo(User::class);
+        return $this->hasMany(OfferSale::class);
     }
 
     public function city(): BelongsTo
@@ -41,8 +49,32 @@ class WeddingHall extends Model
         return $this->belongsTo(City::class);
     }
 
-    public function services(): HasMany
+    public function getCurrentOffer()
     {
-        return $this->hasMany(Services::class, 'wedding_hall_id');
+        return $this->offerSales()
+            ->where('status', true)
+            ->where('start_date', '<=', now())
+            ->where('end_date', '>=', now())
+            ->first();
+    }
+
+    public function getOriginalPrice()
+    {
+        return $this->shift_prices['full_day'] ?? 0;
+    }
+
+    public function scopeActive($query)
+    {
+        return $query->where('status', true);
+    }
+
+    public function bookings(): HasMany
+    {
+        return $this->hasMany(Booking::class);
+    }
+
+    public function payments(): HasMany
+    {
+        return $this->hasMany(Payment::class);
     }
 }

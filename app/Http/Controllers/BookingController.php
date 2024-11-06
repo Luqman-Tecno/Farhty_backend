@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Booking;
 use App\Models\WeddingHall;
-use App\Services\BookingService;
+use App\Service\BookingService;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 

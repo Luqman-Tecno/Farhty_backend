@@ -24,31 +24,33 @@ class ServicesResource extends Resource
 
     protected static ?string $slug = 'services';
 
-    protected static ?string $navigationLabel = "ادارة خدمات الصالة";
+    protected static ?string $navigationLabel = "إدارة خدمات القاعة";
     protected static ?string $navigationGroup = 'الصالة';
+    protected static ?string $modelLabel = 'خدمة';
+    protected static ?string $pluralModelLabel = 'خدمات';
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
-                TextInput::make('name')->label('الاسم')
+                TextInput::make('name')->label('اسم الخدمة')
                     ->required()
-                    ->maxLength(255),
-
+                    ->maxLength(255)
+                    ->placeholder('أدخل اسم الخدمة'),
 
                 TextInput::make('price')->label('السعر')
                     ->required()
                     ->numeric()
                     ->prefix('د.ل')
                     ->inputMode('decimal')
-                    ->step(0.01),
+                    ->step(0.01)
+                    ->placeholder('أدخل السعر'),
 
                 Hidden::make('wedding_hall_id')
                     ->default(function () {
                         return auth()->user()->weddingHall->id;
                     }),
-
 
             ]);
     }
@@ -57,11 +59,11 @@ class ServicesResource extends Resource
     {
         return $table
             ->columns([
-                TextColumn::make('name')->label('الاسم')
+                TextColumn::make('name')->label('اسم الخدمة')
                     ->searchable()
                     ->sortable(),
 
-                TextColumn::make('price')->label('السعر')
+                TextColumn::make('price')->label('السعر بالدينار الليبي')
                     ->money('lyd')
                     ->sortable(),
 

@@ -7,6 +7,7 @@ use App\Models\Booking;
 use App\Models\WeddingHall;
 use App\Models\User;
 use App\Enum\BookingStatusEnum;
+use App\Models\Services;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -16,28 +17,30 @@ use Illuminate\Validation\ValidationException;
 {
     public function processBooking(User $user, WeddingHall $weddingHall, array $bookingData)
     {
-
         return DB::transaction(function () use ($user, $weddingHall, $bookingData) {
             try {
                 $this->validateBookingData($bookingData);
 
                 $bookingDate = Carbon::parse($bookingData['booking_date']);
                 if (!$this->isValidBookingDate($bookingDate)) {
-                    return ['status' => 'error', 'message' => 'Invalid booking date. Bookings must be made within the allowed time frame.'];
+                    return ['status' => 'error', 'message' => 'التاريخ غير صالح للحجز'];
                 }
 
                 if (!$this->isShiftAvailable($weddingHall, $bookingData['booking_date'], $bookingData['shift'])) {
-                    return ['status' => 'error', 'message' => 'The selected shift is not available for the chosen date.'];
+                    return ['status' => 'error', 'message' => 'الفترة غير متاحة للحجز'];
                 }
 
-                $basePrice = $weddingHall->getShiftPrice($bookingData['shift']);
-                if ($basePrice === null) {
-                    return ['status' => 'error', 'message' => 'Invalid shift or price not set for the selected shift.'];
-                }
+                $basePrice = $this->calculateBasePrice($weddingHall, $bookingData['shift']);
+                
+                $childrenCount = (int) ($bookingData['children_count'] ?? 0);
+                $childrenCost = $weddingHall->price_per_child * $childrenCount;
 
-                $childrenCost = $weddingHall->price_per_child * ($bookingData['children_count'] ?? 0);
-                $totalCost = $basePrice + $childrenCost;
-                $deposit = $this->calculateDeposit($totalCost);
+                $additionalServices = $bookingData['additional_services'] ?? [];
+                $servicesCost = $this->calculateServicesCost($additionalServices);
+                
+                $totalCost = $basePrice + $childrenCost + $servicesCost;
+                
+                $depositAmount = $weddingHall->deposit_price ?? ($basePrice * 0.3);
 
                 $booking = new Booking([
                     'user_id' => $user->id,
@@ -46,28 +49,51 @@ use Illuminate\Validation\ValidationException;
                     'shift' => $bookingData['shift'],
                     'start_time' => $this->getShiftStartTime($bookingData['shift']),
                     'end_time' => $this->getShiftEndTime($bookingData['shift']),
-                    'children_count' => $bookingData['children_count'] ?? 0,
+                    'children_count' => $childrenCount,
                     'total_cost' => $totalCost,
-                    'deposit_cost' => $bookingData['deposit_cost'],
+                    'deposit_cost' => $depositAmount,
                     'status' => BookingStatusEnum::Pending,
                 ]);
 
                 $booking->save();
 
+                if (!empty($additionalServices)) {
+                    foreach ($additionalServices as $serviceId => $quantity) {
+                        if ($quantity > 0) {
+                            $booking->services()->attach($serviceId, ['quantity' => $quantity]);
+                        }
+                    }
+                }
+
                 return [
                     'status' => 'success',
                     'booking' => $booking,
-                    'message' => 'Booking created successfully. Please pay the deposit to confirm.',
+                    'message' => 'تم إنشاء الحجز بنجاح. يرجى دفع العربون للتأكيد.',
                     'cost_breakdown' => [
                         'base_price' => $basePrice,
                         'children_cost' => $childrenCost,
+                        'services_cost' => $servicesCost,
                         'total_cost' => $totalCost,
-                        'required_deposit' => $deposit,
+                        'deposit_required' => $depositAmount,
                     ],
                 ];
             } catch (ValidationException $e) {
                 return ['status' => 'error', 'message' => $e->errors()];
+            } catch (\Exception $e) {
+                return ['status' => 'error', 'message' => 'حدث خطأ أثناء إنشاء الحجز: ' . $e->getMessage()];
             }
+        });
+    }
+    
+    public function calculateServicesCost(array $services): float
+    {
+        if (empty($services)) {
+            return 0;
+        }
+
+        return collect($services)->sum(function($quantity, $serviceId) {
+            $service = Services::find($serviceId);
+            return $service ? ($service->price * (int)$quantity) : 0;
         });
     }
 
@@ -171,11 +197,18 @@ use Illuminate\Validation\ValidationException;
     }
     private function getAvailableShiftsForDate(array $bookedShifts): array
     {
-        if (in_array(BookingShiftEnum::FULL_DAY->value, $bookedShifts) || count($bookedShifts) >= 2) {
-            return [];
+        // إذا كان هناك أي حجز (يوم كامل أو أي فترة أخرى)، لا يمكن حجز يوم كامل
+        if (!empty($bookedShifts)) {
+            $availableShifts = [
+                BookingShiftEnum::DAY->value,
+                BookingShiftEnum::NIGHT->value
+            ];
+        } else {
+            // إذا لم يكن هناك حجوزات، يمكن حجز أي فترة بما في ذلك اليوم الكامل
+            $availableShifts = BookingShiftEnum::values();
         }
 
-        $availableShifts = BookingShiftEnum::values();
+        // إزالة الفترات المحجوزة من الفترات المتاحة
         return array_values(array_diff($availableShifts, $bookedShifts));
     }
 
@@ -210,19 +243,32 @@ use Illuminate\Validation\ValidationException;
     public function payDeposit(Booking $booking)
     {
         return DB::transaction(function () use ($booking) {
-            if ($booking->status !== BookingStatusEnum::Pending) {
-                return ['status' => 'error', 'message' => 'Invalid booking status for deposit payment.'];
-            }
-
             try {
+                if ($booking->status !== BookingStatusEnum::Pending->value) {
+                    throw new \Exception('لا يمكن دفع التأمين - حالة الحجز غير صحيحة');
+                }
+
+                if ($booking->deposit_paid) {
+                    throw new \Exception('تم دفع التأمين مسبقاً');
+                }
+
                 $this->updateBookingStatus($booking, BookingStatusEnum::Booked);
+                
                 $booking->deposit_paid = true;
-                $booking->deposit_paid_at = now();
+             
                 $booking->save();
 
-                return ['status' => 'success', 'message' => 'Deposit paid and booking confirmed.'];
-            } catch (\InvalidArgumentException $e) {
-                return ['status' => 'error', 'message' => $e->getMessage()];
+                return [
+                    'status' => 'success',
+                    'message' => 'تم تأكيد الحجز ودفع التأمين بنجاح',
+                    'booking' => $booking
+                ];
+
+            } catch (\Exception $e) {
+                return [
+                    'status' => 'error',
+                    'message' => $e->getMessage()
+                ];
             }
         });
     }
@@ -356,5 +402,56 @@ use Illuminate\Validation\ValidationException;
         });
     }
 
+    public function getAvailableDates(WeddingHall $weddingHall)
+    {
+        $startDate = Carbon::now();
+        $endDate = Carbon::now()->addMonths(6); // نعرض 6 أشهر مقدماً
+        $dates = [];
+
+        $bookedDates = Booking::where('wedding_hall_id', $weddingHall->id)
+            ->whereBetween('booking_date', [$startDate, $endDate])
+            ->whereIn('status', [
+                BookingStatusEnum::Booked->value,
+                BookingStatusEnum::Pending->value,
+                BookingStatusEnum::ON_REVIEW->value
+            ])
+            ->get()
+            ->groupBy(function($booking) {
+                return Carbon::parse($booking->booking_date)->format('Y-m-d');
+            });
+
+        for ($date = $startDate->copy(); $date->lte($endDate); $date->addDay()) {
+            $dateStr = $date->format('Y-m-d');
+            $bookedShifts = $bookedDates->get($dateStr, collect())->pluck('shift')->toArray();
+            
+            $isFullyBooked = in_array(BookingShiftEnum::FULL_DAY->value, $bookedShifts) || 
+                count($bookedShifts) >= 2;
+
+            $dates[] = [
+                'date' => $dateStr,
+                'available' => !$isFullyBooked,
+                'day_name' => $date->locale('ar')->dayName,
+                'shifts' => $this->getAvailableShiftsForDate($bookedShifts),
+                'is_weekend' => $date->isWeekend(),
+                'formatted_date' => $date->locale('ar')->format('j F Y'),
+            ];
+        }
+
+        return $dates;
+    }
+
+    public function calculateBasePrice(WeddingHall $weddingHall, string $shift): float
+    {
+        $activeSale = $weddingHall->offerSales()
+            ->where('status', 1)
+            ->first();
+
+        if ($activeSale) {
+            return $activeSale->sale_price;
+        }
+
+        $shiftPrices = $weddingHall->shift_prices;
+        return $shiftPrices[$shift] ?? 0;
+    }
 
 }

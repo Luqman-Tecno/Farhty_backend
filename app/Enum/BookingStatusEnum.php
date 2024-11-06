@@ -2,7 +2,6 @@
 
 namespace App\Enum;
 
-
 use App\Trait\EnumValues;
 use Filament\Support\Contracts\HasLabel;
 
@@ -26,6 +25,7 @@ enum BookingStatusEnum: string implements HasLabel
             self::ON_REVIEW => 'قيد المراجعة',
         };
     }
+
     public static function fromValue(string $value): self
     {
         return match($value) {
@@ -33,7 +33,15 @@ enum BookingStatusEnum: string implements HasLabel
             'Cancelled' => self::Cancelled,
             'Pending' => self::Pending,
             'Checkout' => self::CHECKOUT,
-            default => throw new \ValueError("Invalid shift value: {$value}")
+            'On Review' => self::ON_REVIEW,
+            default => throw new \ValueError("Invalid status value: {$value}")
         };
+    }
+
+    public static function getLabelsForValues(array $values): array
+    {
+        return array_map(function ($value) {
+            return self::fromValue($value)->getLabel();
+        }, $values);
     }
 }

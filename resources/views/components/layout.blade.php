@@ -8,6 +8,7 @@
     <title>{{ config('app.name', 'Laravel') }}</title>
     @livewireStyles
     @filamentStyles
+    @stack('styles')
 </head>
 <body class=" antialiased">
 
@@ -22,6 +23,7 @@
 @filamentScripts
 @livewireScripts
 @vite('resources/js/app.js')
+@stack('scripts')
 </body>
 <style>
     .custom-gradient {

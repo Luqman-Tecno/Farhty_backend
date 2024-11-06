@@ -1,0 +1,10 @@
+{
+    "cairo": {
+        "normal": "C:\\Users\\PC\\Desktop\\project\\farhty\\Farhty_backend\\storage\\fonts\/cairo_normal_7ae76a8ed31a4c9ca9e40ec8e855f2d5",
+        "bold": "cairo_bold_38bc229003c1b0db7e96160770665569"
+    },
+    "tajawal": {
+        "normal": "C:\\Users\\PC\\Desktop\\project\\farhty\\Farhty_backend\\storage\\fonts\/tajawal_normal_4e8c13dd334cb41762cc2f7fcbbb7ae7",
+        "bold": "tajawal_bold_7c793572976b5d7166fe085a59988dde"
+    }
+}

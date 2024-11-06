@@ -47,10 +47,7 @@ class UserResource extends Resource
                     ->required(fn(string $context): bool => $context === 'create')
                     ->revealable()
                     ->maxLength(100),
-                Select::make('roles')->label("ادور ")
-                    ->relationship('roles', 'name')
-                    ->preload()
-                    ->searchable(),
+                
                 TextInput::make('phone_number')->label("رقم الهاتف")
                     ->tel()
                     ->required()
@@ -74,6 +71,7 @@ class UserResource extends Resource
                     ->sortable(),
 
                 TextColumn::make('type')->label('الدور')
+                    ->formatStateUsing(fn (string $state): string => UserTypeEnum::from($state)->getLabel())
                     ->searchable()
                     ->sortable(),
             ])

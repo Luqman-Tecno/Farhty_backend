@@ -2,13 +2,49 @@
     <div class="bg-white rounded-2xl shadow-xl overflow-hidden">
         <!-- Image Gallery -->
         <div class="relative h-[500px] group">
-            @if($weddingHall->images)
-                <img
-                    src="{{ asset( \Illuminate\Support\Facades\Storage::url($weddingHall->images[0]) )  ?? 'images/default-hall.jpg' }}"
-                    class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                    alt="{{ $weddingHall->hall_name }}"
-                >
-                <div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
+            @if($weddingHall->images && count($weddingHall->images) > 0)
+                <div class="mb-8" x-data="{ activeSlide: 0, totalSlides: {{ count($weddingHall->images) }} }">
+                    <div class="relative h-[500px] overflow-hidden rounded-b-2xl">
+                        <div class="flex h-full">
+                            @foreach($weddingHall->images as $index => $image)
+                                <div class="absolute w-full h-full transition-opacity duration-300"
+                                     x-show="activeSlide === {{ $index }}"
+                                     x-transition:enter="transition ease-out duration-300"
+                                     x-transition:enter-start="opacity-0 transform scale-95"
+                                     x-transition:enter-end="opacity-100 transform scale-100">
+                                    <img src="{{ asset(\Illuminate\Support\Facades\Storage::url($image)) }}" 
+                                         alt="{{ $weddingHall->hall_name }}" 
+                                         class="w-full h-full object-cover">
+                                    <div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
+                                </div>
+                            @endforeach
+                        </div>
+                        
+                        <!-- أزرار التنقل -->
+                        <button @click="activeSlide = (activeSlide - 1 + totalSlides) % totalSlides" 
+                                class="absolute left-2 top-1/2 transform -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-3 rounded-full transition-all">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                            </svg>
+                        </button>
+                        <button @click="activeSlide = (activeSlide + 1) % totalSlides" 
+                                class="absolute right-2 top-1/2 transform -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-3 rounded-full transition-all">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                            </svg>
+                        </button>
+
+                        <!-- مؤشرات النقاط -->
+                        <div class="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2">
+                            @foreach($weddingHall->images as $index => $image)
+                                <button @click="activeSlide = {{ $index }}" 
+                                        class="w-3 h-3 rounded-full transition-all duration-300"
+                                        :class="activeSlide === {{ $index }} ? 'bg-white scale-110' : 'bg-white/50 hover:bg-white/75'">
+                                </button>
+                            @endforeach
+                        </div>
+                    </div>
+                </div>
             @else
                 <div class="w-full h-full bg-gray-100 flex items-center justify-center">
                     <span class="text-gray-400 text-lg">لا توجد صورة</span>
@@ -19,7 +55,7 @@
             <div class="absolute top-6 left-6 bg-white/90 backdrop-blur-sm px-6 py-3 rounded-full shadow-lg">
                 <span class="text-2xl font-bold text-purple-900">
                     @if($weddingHall->shift_prices)
-                            {{ number_format($weddingHall->shift_prices['full_day'] ?? 0, 2) }}
+                        {{ number_format($weddingHall->shift_prices['full_day'] ?? 0, 2) }}
                         <span class="text-sm font-medium">د.ل</span>
                     @endif
                 </span>
@@ -66,35 +102,24 @@
 
             <!-- Booking Section -->
             <div class="mt-10 bg-gradient-to-br from-purple-50 to-purple-100/50 p-8 rounded-2xl border border-purple-100">
-                <h3 class="text-2xl font-bold text-purple-900 mb-6">احجز الآن</h3>
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <div class="space-y-2">
-                        <label class="block text-sm font-medium text-purple-900">اختر التاريخ</label>
-                        <input
-                            type="date"
-                            wire:model="selectedDate"
-                            min="{{ now()->format('Y-m-d') }}"
-                            class="w-full rounded-xl border-purple-200 bg-white/70 focus:border-purple-500 focus:ring-purple-500 py-3"
+                <h3 class="text-2xl font-bold text-purple-900 mb-6">مواعيد الحجز المتاحة</h3>
+                
+                @include('livewire.components.calendar')
+
+                <!-- Selected Date Section -->
+                @if($selectedDate)
+                    <div class="mt-6 p-4 bg-white rounded-lg shadow-sm">
+                        <p class="text-lg mb-4">
+                            التاريخ المختار: <strong>{{ \Carbon\Carbon::parse($selectedDate)->locale('ar')->format('j F Y') }}</strong>
+                        </p>
+                        <button
+                            wire:click="proceedToBooking"
+                            class="w-full bg-purple-900 text-white py-4 px-6 rounded-xl hover:bg-purple-800 transition-colors duration-200 text-lg font-medium"
                         >
+                            احجز الآن
+                        </button>
                     </div>
-                    <div class="space-y-2">
-                        <label class="block text-sm font-medium text-purple-900">اختر الفترة</label>
-                        <select
-                            wire:model="selectedShift"
-                            class="w-full rounded-xl border-purple-200 bg-white/70 focus:border-purple-500 focus:ring-purple-500 py-3"
-                        >
-                            <option value="day">الفترة الصباحية</option>
-                            <option value="night">الفترة المسائية</option>
-                            <option value="full_day">اليوم كله</option>
-                        </select>
-                    </div>
-                </div>
-                <button
-                    wire:click="checkAvailability"
-                    class="mt-6 w-full bg-purple-900 text-white py-4 px-6 rounded-xl hover:bg-purple-800 transition-colors duration-200 text-lg font-medium"
-                >
-                    تحقق من التوفر وأكمل الحجز
-                </button>
+                @endif
             </div>
 
             <!-- Amenities -->

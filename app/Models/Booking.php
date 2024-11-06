@@ -16,15 +16,19 @@ class Booking extends Model
         'booking_date',
         'start_time',
         'end_time',
+        'shift',
+        'deposit_cost',
         'total_cost',
         'deposit_paid',
-        'status','shift', 'deposit_cost', 'children_count'
+        'children_count',
+        'status',
     ];
 
     protected $casts = [
         'booking_date' => 'date',
         'start_time' => 'datetime',
         'end_time' => 'datetime',
+        'deposit_paid' => 'boolean',
     ];
 
     public function user(): BelongsTo
@@ -35,5 +39,10 @@ class Booking extends Model
     public function weddingHall(): BelongsTo
     {
         return $this->belongsTo(WeddingHall::class);
+    }
+
+    public function payments()
+    {
+        return $this->hasMany(Payment::class);
     }
 }

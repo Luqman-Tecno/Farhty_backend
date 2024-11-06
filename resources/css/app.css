@@ -5,3 +5,136 @@
 [x-cloak] {
     display: none;
 }
+
+.fc-direction-rtl {
+    font-family: 'Cairo', sans-serif;
+}
+
+.fc-header-toolbar {
+    padding: 1rem;
+}
+
+.fc-day-today {
+    background-color: rgba(139, 92, 246, 0.1) !important;
+}
+
+.available-event {
+    background-color: rgba(34, 197, 94, 0.2) !important;
+    border: none !important;
+}
+
+.weekend-event {
+    background-color: rgba(139, 92, 246, 0.2) !important;
+    border: none !important;
+}
+
+.booked-event {
+    background-color: rgba(239, 68, 68, 0.2) !important;
+    border: none !important;
+}
+
+.calendar-container {
+    @apply max-w-full overflow-hidden;
+}
+
+.calendar-grid {
+    @apply w-full transition-all duration-300;
+}
+
+.aspect-square {
+    aspect-ratio: 1 / 1;
+}
+
+@media (max-width: 640px) {
+    .calendar-grid {
+        font-size: 0.875rem;
+    }
+}
+
+.calendar-wrapper {
+    @apply max-w-3xl mx-auto bg-white rounded-xl shadow-sm p-4;
+}
+
+.month-navigation {
+    @apply flex items-center justify-between mb-6 px-2;
+}
+
+.nav-btn {
+    @apply p-2 text-purple-600 hover:bg-purple-50 rounded-full transition-colors duration-200;
+}
+
+.month-title {
+    @apply text-xl font-bold text-purple-900;
+}
+
+.calendar-grid-container {
+    @apply w-full;
+}
+
+.weekdays-grid {
+    @apply grid grid-cols-7 gap-1 mb-2;
+}
+
+.weekday {
+    @apply text-center text-sm font-semibold text-purple-900 py-2;
+}
+
+.days-grid {
+    @apply grid grid-cols-7 gap-1;
+}
+
+.day-cell {
+    @apply relative aspect-square p-1 rounded-lg transition-all duration-200;
+}
+
+.day-cell.padding {
+    @apply bg-transparent;
+}
+
+.day-cell.available {
+    @apply cursor-pointer bg-purple-50 hover:bg-purple-100;
+}
+
+.day-cell.available.weekend {
+    @apply bg-green-50 hover:bg-green-100;
+}
+
+.day-cell.unavailable {
+    @apply cursor-not-allowed bg-red-50;
+}
+
+.day-cell.selected {
+    @apply ring-2 ring-purple-500;
+}
+
+.day-content {
+    @apply h-full flex flex-col items-center justify-center;
+}
+
+.day-number {
+    @apply text-base font-semibold text-gray-900;
+}
+
+.shifts-count {
+    @apply text-xs text-purple-600 mt-0.5;
+}
+
+.unavailable-label {
+    @apply text-xs text-red-500 mt-0.5;
+}
+
+/* Responsive styles */
+@media (max-width: 640px) {
+    .weekday {
+        @apply text-xs py-1;
+    }
+    
+    .day-number {
+        @apply text-sm;
+    }
+    
+    .shifts-count,
+    .unavailable-label {
+        @apply text-[10px];
+    }
+}

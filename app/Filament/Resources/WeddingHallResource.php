@@ -4,8 +4,8 @@ namespace App\Filament\Resources;
 
 use App\Enum\BookingShiftEnum;
 use App\Enum\UserTypeEnum;
+use App\Filament\Resources\WeddingHallResource\OfferSalesRelationManager;
 use App\Filament\Resources\WeddingHallResource\Pages;
-use App\Filament\Resources\WeddingHallResource\RelationManagers;
 use App\Models\City;
 use App\Models\User;
 use App\Models\WeddingHall;
@@ -53,26 +53,40 @@ class WeddingHallResource extends Resource
                                 Forms\Components\TextInput::make('region')
                                     ->label('المنطقة')
                                     ->required(),
-                            ])->columns('2'),
+                                Forms\Components\Textarea::make('description')
+                                    ->label('وصف القاعة')
+                                    ->rows(3)
+                                    ->columnSpan(2),
+                                Forms\Components\Toggle::make('status')
+                                    ->label('حالة القاعة')
+                                    ->default(true)
+                                    ->inline(false),
+                            ])->columns(2),
                         ]),
                     Forms\Components\Wizard\Step::make('الأسعار والمميزات')
                         ->schema([
                             Forms\Components\Section::make('اسعار الفترات')
                                 ->statePath('shift_prices')
                                 ->schema([
-                                    Forms\Components\TextInput::make(BookingShiftEnum::DAY->value)->label('صباح')->numeric()
+                                    Forms\Components\TextInput::make(BookingShiftEnum::DAY->value)
+                                        ->label('صباح')
+                                        ->numeric()
                                         ->prefix('د.ل')
                                         ->inputMode('decimal')
                                         ->step(0.01),
-                                    Forms\Components\TextInput::make(BookingShiftEnum::NIGHT->value)->label('مساء')->numeric()
+                                    Forms\Components\TextInput::make(BookingShiftEnum::NIGHT->value)
+                                        ->label('مساء')
+                                        ->numeric()
                                         ->prefix('د.ل')
                                         ->inputMode('decimal')
                                         ->step(0.01),
-                                    Forms\Components\TextInput::make(BookingShiftEnum::FULL_DAY->value)->label('اليوم كله')->numeric()
+                                    Forms\Components\TextInput::make(BookingShiftEnum::FULL_DAY->value)
+                                        ->label('اليوم كله')
+                                        ->numeric()
                                         ->prefix('د.ل')
                                         ->inputMode('decimal')
                                         ->step(0.01),
-                                ])->columns('3'),
+                                ])->columns(3),
                             Forms\Components\Grid::make()->schema([
                                 Forms\Components\TextInput::make('deposit_price')
                                     ->label('قيمة العربون')
@@ -88,9 +102,11 @@ class WeddingHallResource extends Resource
                                     ->prefix('د.ل')
                                     ->inputMode('decimal')
                                     ->step(0.01),
-                                Forms\Components\Textarea::make('amenities')
+                                Forms\Components\TagsInput::make('amenities')
                                     ->label('المرافق والخدمات')
-                                    ->nullable(),])->columns(2),
+                                    ->separator(',')
+                                    ->columnSpan(2),
+                            ])->columns(2),
                         ]),
                     Forms\Components\Wizard\Step::make('الموقع')
                         ->schema([
@@ -100,11 +116,17 @@ class WeddingHallResource extends Resource
                                 Forms\Components\Hidden::make('latitude'),
                                 Forms\Components\Hidden::make('longitude'),
                             ]),
-                        ]), Forms\Components\Wizard\Step::make('الصور')
+                        ]), 
+                    Forms\Components\Wizard\Step::make('الصور')
                         ->schema([
-                            Forms\Components\FileUpload::make('images')->disk('public')
+                            Forms\Components\FileUpload::make('images')
+                                ->disk('public')
                                 ->directory('hall_images')
                                 ->multiple()
+                                ->maxFiles(5)
+                                ->image()
+                                ->imageResizeMode('cover')
+                                ->imageCropAspectRatio('16:9')
                         ]),
                 ])
                     ->columnSpan('full')
@@ -128,33 +150,45 @@ class WeddingHallResource extends Resource
                             ->sortable()
                             ->weight('bold')
                             ->size('lg'),
+                        Tables\Columns\TextColumn::make('description')
+                            ->label('الوصف')
+                            ->limit(50)
+                            ->searchable(),
                         Tables\Columns\TextColumn::make('city.name_ar')
                             ->label('المدينة')
                             ->searchable(),
                         Tables\Columns\TextColumn::make('region')
                             ->label('المنطقة')
                             ->searchable(),
-                        Tables\Columns\TextColumn::make('shift_prices.'.BookingShiftEnum::DAY->value)
-                            ->label('سعر الفترة الصباحية')
-                            ->money('sar')
-                            ,
-                        Tables\Columns\TextColumn::make('shift_prices.'.BookingShiftEnum::NIGHT->value)
-                            ->label('سعر الفترة المسائية')
-                            ->money('sar')
-                            ,
+                        Tables\Columns\TextColumn::make('shift_prices.'.BookingShiftEnum::FULL_DAY->value)
+                            ->label('السعر الكامل')
+                            ->money('lyd'),
+                        Tables\Columns\IconColumn::make('status')
+                            ->label('الحالة')
+                            ->boolean(),
                     ])->collapsible(),
                 ]),
             ])
             ->filters([
-                //
+                Tables\Filters\TrashedFilter::make(),
+                Tables\Filters\SelectFilter::make('city')
+                    ->relationship('city', 'name_ar')
+                    ->label('المدينة'),
+                Tables\Filters\TernaryFilter::make('status')
+                    ->label('الحالة')
+                    ->placeholder('الكل')
+                    ->trueLabel('نشط')
+                    ->falseLabel('غير نشط'),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\ViewAction::make(),
+                Tables\Actions\DeleteAction::make(),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
+                    Tables\Actions\RestoreBulkAction::make(),
                 ]),
             ]);
     }
@@ -162,7 +196,7 @@ class WeddingHallResource extends Resource
     public static function getRelations(): array
     {
         return [
-            //
+            OfferSalesRelationManager::make(),
         ];
     }
 
@@ -176,9 +210,16 @@ class WeddingHallResource extends Resource
         ];
     }
 
+    public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()
+            ->withoutGlobalScopes([
+                SoftDeletingScope::class,
+            ]);
+    }
 
     public static function getGloballySearchableAttributes(): array
     {
-        return ['hall_name'];
+        return ['hall_name', 'description', 'region'];
     }
 }

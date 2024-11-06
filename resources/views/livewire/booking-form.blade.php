@@ -1,179 +1,181 @@
 <div>
     <div class="py-12" dir="rtl">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-gradient-to-b from-gray-50 to-white overflow-hidden shadow-xl sm:rounded-2xl">
-                <div class="max-w-5xl mx-auto p-8 font-cairo">
-                    <!-- Header Section -->
-                    <div class="text-center mb-10">
-                        <h2 class="text-3xl font-bold text-gray-900 mb-2">حجز القاعة</h2>
-                        <p class="text-gray-600">اختر التاريخ والخدمات المناسبة لحجزك</p>
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+            <!-- رسائل الخطأ -->
+            @if($errorMessage)
+                <div class="mb-4 bg-red-50 border border-red-200 text-red-800 rounded-xl p-4">
+                    <div class="flex items-center">
+                        <svg class="w-5 h-5 text-red-400 ml-2" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
+                        </svg>
+                        <span>{{ $errorMessage }}</span>
+                    </div>
+                </div>
+            @endif
+
+            <!-- رسائل النجاح -->
+            @if(session()->has('message'))
+                <div class="mb-4 bg-green-50 border border-green-200 text-green-800 rounded-xl p-4">
+                    <div class="flex items-center">
+                        <svg class="w-5 h-5 text-green-400 ml-2" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                        </svg>
+                        <span>{{ session('message') }}</span>
+                    </div>
+                </div>
+            @endif
+
+            <div class="bg-white rounded-2xl shadow-lg overflow-hidden">
+                <!-- رأس الصفحة -->
+                <div class="bg-gradient-to-r from-purple-600 to-purple-700 px-6 py-8 text-white">
+                    <h2 class="text-2xl font-bold">تأكيد حجز القاعة</h2>
+                    <p class="mt-2 text-purple-100">{{ $weddingHall->hall_name }}</p>
+                </div>
+
+                <!-- تفاصيل الحجز -->
+                <div class="p-6 space-y-8">
+                    <!-- التاريخ المختار -->
+                    <div class="calendar-info mb-6">
+                        <div class="bg-purple-50 rounded-xl p-4">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center gap-3">
+                                    <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                    </svg>
+                                    <span class="font-medium text-purple-900">التاريخ المختار:</span>
+                                </div>
+                                <span class="text-purple-700 font-bold">
+                                    {{ Carbon\Carbon::parse($selectedDate)->locale('ar')->translatedFormat('l j F Y') }}
+                                </span>
+                            </div>
+                        </div>
                     </div>
 
-                    <!-- Alert Messages -->
-                    @if (session()->has('message'))
-                        <div class="bg-green-50 border-r-4 border-green-500 p-4 rounded-2xl flex items-center mb-6 animate-fadeIn">
-                            <svg class="h-6 w-6 text-green-500 ml-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-                            </svg>
-                            <p class="text-green-700">{{ session('message') }}</p>
-                        </div>
-                    @endif
+                    <input type="hidden" wire:model="selectedDate">
 
-                    @if (session()->has('error'))
-                        <div class="bg-red-50 border-r-4 border-red-500 p-4 rounded-2xl flex items-center mb-6 animate-fadeIn">
-                            <svg class="h-6 w-6 text-red-500 ml-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                            </svg>
-                            <p class="text-red-700">{{ session('error') }}</p>
-                        </div>
-                    @endif
-
-                    <!-- Booking Form -->
-                    <form wire:submit.prevent="submit" class="space-y-8">
-                        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                                <!-- Booking Date -->
-                                <div class="form-group">
-                                    <label class="block text-sm font-bold text-gray-700 mb-2">تاريخ الحجز</label>
-                                    <div class="relative">
-                                        <input type="date" wire:model="bookingDate"
-                                               class="w-full px-4 py-3.5 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all shadow-sm">
-                                        @error('bookingDate') <span class="text-red-500 text-sm mt-2 block">{{ $message }}</span> @enderror
-                                    </div>
-                                </div>
-
-                                <!-- Shift Selection -->
-                                <div class="space-y-2">
-                                    <label class="block text-sm font-medium text-purple-900">الفترة</label>
-                                    <select
-                                        wire:model="shift"
-                                        class="w-full rounded-xl border-purple-200 bg-white/70 focus:border-purple-500 focus:ring-purple-500 py-3"
-                                    >
-                                        <option value="">اختر الفترة</option>
-                                        <option value="day">صباحي</option>
-                                        <option value="night">مسائي</option>
-                                        <option value="full_day">يوم كامل</option>
-                                    </select>
-                                    @error('shift') <span class="text-red-500 text-sm mt-2 block">{{ $message }}</span> @enderror
-                                </div>
-                            </div>
-
-                            <!-- Children Count -->
-                            <div class="mt-8">
-                                <label class="block text-sm font-bold text-gray-700 mb-2">عدد الأطفال</label>
-                                <input type="number" wire:model="childrenCount" min="0"
-                                       class="w-full px-4 py-3.5 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all shadow-sm">
-                                @error('childrenCount') <span class="text-red-500 text-sm mt-2 block">{{ $message }}</span> @enderror
-                            </div>
-                        </div>
-
-                        <!-- Additional Services -->
-                        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-                            <h3 class="text-lg font-bold text-gray-800 mb-6">الخدمات الإضافية</h3>
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                @foreach($weddingHall->services as $service)
-                                    <div class="flex items-center p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors">
-                                        <input type="number"
-                                               wire:model="additionalServices.{{ $service->id }}"
-                                               min="0"
-                                               class="w-24 px-3 py-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 shadow-sm">
-                                        <span class="mr-4 text-gray-700 font-medium">{{ $service->name }}</span>
-                                    </div>
+                    <form wire:submit.prevent="submit" class="space-y-6">
+                        <!-- اختيار الفترة -->
+                        <div class="space-y-2">
+                            <label class="block text-sm font-medium text-gray-700">الفترة</label>
+                            <div class="grid grid-cols-3 gap-3">
+                                @foreach(['day' => 'صباحي', 'night' => 'مسائي', 'full_day' => 'يوم كامل'] as $value => $label)
+                                    @if(in_array($value, $this->availableShifts))
+                                        <label class="relative flex">
+                                            <input type="radio" wire:model.live="shift" value="{{ $value }}" 
+                                                   class="peer sr-only" name="shift">
+                                            <div class="w-full p-3 text-center rounded-xl border cursor-pointer 
+                                                        peer-checked:bg-purple-100 peer-checked:border-purple-500 
+                                                        peer-checked:text-purple-900 hover:bg-gray-50">
+                                                {{ $label }}
+                                            </div>
+                                        </label>
+                                    @else
+                                        <div class="w-full p-3 text-center rounded-xl border bg-gray-100 text-gray-400 cursor-not-allowed">
+                                            {{ $label }}
+                                        </div>
+                                    @endif
                                 @endforeach
                             </div>
+                            @error('shift') <span class="text-red-500 text-sm">{{ $message }}</span> @enderror
                         </div>
 
-                        <!-- Notes & Special Requests -->
-                        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                                <div class="form-group">
-                                    <label class="block text-sm font-bold text-gray-700 mb-2">ملاحظات</label>
-                                    <textarea wire:model="notes" rows="4"
-                                              class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all shadow-sm"></textarea>
-                                    @error('notes') <span class="text-red-500 text-sm mt-2 block">{{ $message }}</span> @enderror
-                                </div>
+                        <!-- عدد الأطفال -->
+                        <div class="space-y-2">
+                            <label class="block text-sm font-medium text-gray-700">عدد الأطفال</label>
+                            <input type="number" wire:model.live="childrenCount" min="0"
+                                   class="w-full rounded-xl border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500">
+                            @error('childrenCount') <span class="text-red-500 text-sm">{{ $message }}</span> @enderror
+                        </div>
 
-                                <div class="form-group">
-                                    <label class="block text-sm font-bold text-gray-700 mb-2">طلبات خاصة</label>
-                                    <textarea wire:model="specialRequests" rows="4"
-                                              class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all shadow-sm"></textarea>
-                                    @error('specialRequests') <span class="text-red-500 text-sm mt-2 block">{{ $message }}</span> @enderror
+                        <!-- الخدمات الإضافية -->
+                        @if($weddingHall->services && $weddingHall->services->isNotEmpty())
+                            <div class="space-y-4">
+                                <h3 class="font-medium text-gray-900">الخدمات الإضافية</h3>
+                                <div class="grid gap-4 sm:grid-cols-2">
+                                    @foreach($weddingHall->services as $service)
+                                        <label class="flex items-center justify-between p-4 bg-gray-50 rounded-xl cursor-pointer hover:bg-gray-100">
+                                            <div class="flex items-center gap-3">
+                                                <input type="checkbox" 
+                                                       wire:model.live="additionalServices.{{ $service->id }}"
+                                                       class="rounded border-gray-300 text-purple-600 shadow-sm 
+                                                              focus:border-purple-500 focus:ring-purple-500">
+                                                <div>
+                                                    <p class="font-medium text-gray-900">{{ $service->name }}</p>
+                                                    <p class="text-sm text-gray-500">{{ number_format($service->price, 2) }} د.ل</p>
+                                                </div>
+                                            </div>
+                                        </label>
+                                    @endforeach
                                 </div>
                             </div>
+                        @endif
+
+                        <!-- الملاحظات -->
+                        <div class="space-y-2">
+                            <label class="block text-sm font-medium text-gray-700">ملاحظات إضافية</label>
+                            <textarea wire:model="notes" rows="3"
+                                      class="w-full rounded-xl border-gray-300 shadow-sm 
+                                             focus:border-purple-500 focus:ring-purple-500"></textarea>
+                            @error('notes') <span class="text-red-500 text-sm">{{ $message }}</span> @enderror
                         </div>
 
-                        <!-- Price Breakdown -->
+                        <!-- ملخص السعر -->
                         @if(!empty($priceBreakdown))
-                            <div class="bg-blue-50 rounded-2xl p-8 border border-blue-100">
-                                <h3 class="text-xl font-bold text-gray-900 mb-6">تفاصيل السعر</h3>
-                                <div class="space-y-4">
-                                    <div class="flex justify-between py-3 border-b border-blue-100">
-                                        <span class="text-gray-600">سعر القاعة الأساسي</span>
+                            <div class="bg-gray-50 rounded-xl p-6 space-y-4">
+                                <h3 class="font-bold text-gray-900">تفاصيل السعر</h3>
+                                <div class="space-y-3">
+                                    <div class="flex justify-between">
+                                        <span class="text-gray-600">
+                                            سعر القاعة
+                                            @if($priceBreakdown['has_offer'])
+                                                <span class="text-green-600 text-sm">(سعر العرض)</span>
+                                            @endif
+                                        </span>
+                                        <span class="font-medium">{{ number_format($priceBreakdown['base_price'], 2) }} د.ل</span>
+                                    </div>
+                                    
+                                    @if($priceBreakdown['children_cost'] > 0)
+                                        <div class="flex justify-between">
+                                            <span class="text-gray-600">تكلفة الأطفال</span>
+                                            <span class="font-medium">{{ number_format($priceBreakdown['children_cost'], 2) }} د.ل</span>
+                                        </div>
+                                    @endif
+                                    
+                                    @if($priceBreakdown['services_cost'] > 0)
+                                        <div class="flex justify-between">
+                                            <span class="text-gray-600">الخدمات الإضافية</span>
+                                            <span class="font-medium">{{ number_format($priceBreakdown['services_cost'], 2) }} د.ل</span>
+                                        </div>
+                                    @endif
 
-                                        <span class="font-bold text-gray-900">{{ number_format($priceBreakdown['base_price'], 2) }} ريال</span>
+                                    <div class="pt-4 border-t border-gray-200">
+                                        <div class="flex justify-between">
+                                            <span class="font-bold text-gray-900">المجموع الكلي</span>
+                                            <span class="font-bold text-purple-600">{{ number_format($priceBreakdown['total'], 2) }} د.ل</span>
+                                        </div>
                                     </div>
-                                    <div class="flex justify-between py-3 border-b border-blue-100">
-                                        <span class="text-gray-600">تكلفة الأطفال</span>
-                                        <span class="font-bold text-gray-900">{{ number_format($priceBreakdown['children_cost'], 2) }} ريال</span>
-                                    </div>
-                                    <div class="flex justify-between py-3 border-b border-blue-100">
-                                        <span class="text-gray-600">الخدمات الإضافية</span>
-                                        <span class="font-bold text-gray-900">{{ number_format($priceBreakdown['services_cost'], 2) }} ريال</span>
-                                    </div>
-                                    <div class="flex justify-between py-3 border-b border-blue-100">
-                                        <span class="text-gray-600">الضريبة</span>
-                                        <span class="font-bold text-gray-900">{{ number_format($priceBreakdown['tax'], 2) }} ريال</span>
-                                    </div>
-                                    <div class="flex justify-between py-4 text-lg">
-                                        <span class="font-bold text-gray-900">المجموع الكلي</span>
-                                        <span class="font-bold text-blue-600">{{ number_format($priceBreakdown['total_cost'], 2) }} ريال</span>
-                                    </div>
-                                    <div class="flex justify-between py-4 bg-green-50 rounded-xl px-6">
-                                        <span class="font-bold text-green-800">العربون المطلوب</span>
-                                        <span class="font-bold text-green-600">{{ number_format($priceBreakdown['deposit_required'], 2) }} ريال</span>
+
+                                    <div class="bg-purple-50 p-4 rounded-lg mt-4">
+                                        <div class="flex justify-between">
+                                            <span class="font-medium text-purple-900">العربون المطلوب (30%)</span>
+                                            <span class="font-bold text-purple-900">{{ number_format($priceBreakdown['deposit_required'], 2) }} د.ل</span>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         @endif
 
-                        <!-- Submit Button -->
-                        <button
-                                type="submit"
-                                class="w-full py-4 px-6 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-xl shadow-lg transition-all duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transform hover:scale-[1.02]">
-                            تأكيد الحجز
+                        <!-- زر التأكيد مع حالة التحميل -->
+                        <button type="submit"
+                                class="w-full bg-purple-600 text-white py-4 px-6 rounded-xl font-medium
+                                       hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 
+                                       focus:ring-offset-2 transition-colors duration-200 relative"
+                                wire:loading.attr="disabled"
+                                wire:loading.class="opacity-75">
+                            <span wire:loading.remove>تأكيد الحجز</span>
+                            <span wire:loading>جاري المعالجة...</span>
                         </button>
                     </form>
-
-                    <!-- Available Dates Calendar -->
-                    <div class="mt-16">
-                        <h3 class="text-xl font-bold text-gray-900 mb-8">التواريخ المتاحة</h3>
-                        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-                            @foreach($schedule as $date => $shifts)
-                                <div class="p-4 rounded-xl border border-gray-200 hover:border-blue-500 hover:shadow-md transition-all bg-white">
-                                    <div class="text-sm font-bold text-gray-800 mb-3">
-                                        {{ \Carbon\Carbon::parse($date)->format('Y-m-d') }}
-                                    </div>
-                                    <div class="space-y-2">
-                                        @foreach($shifts as $shift)
-                                            <div class="text-xs py-1 px-2 bg-gray-50 rounded-md text-gray-600">
-                                                @switch($shift)
-                                                    @case('day')
-                                                        صباحاً
-                                                        @break
-                                                    @case('night')
-                                                        مساءً
-                                                        @break
-                                                    @case('full_day')
-                                                        يوم كامل
-                                                        @break
-                                                @endswitch
-                                            </div>
-                                        @endforeach
-                                    </div>
-                                </div>
-                            @endforeach
-                        </div>
-                    </div>
                 </div>
             </div>
         </div>

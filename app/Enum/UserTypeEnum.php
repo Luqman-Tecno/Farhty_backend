@@ -18,9 +18,9 @@ enum UserTypeEnum: string implements HasLabel
 
         return match ($this) {
 
-            self::ADMIN => 'Admin',
-            self::WEDDING_ADMIN => 'Wedding admin',
-            self::USER => 'user',
+            self::ADMIN => 'مدير النظام',
+            self::WEDDING_ADMIN => 'مدير الصالة',
+            self::USER => 'مستخدم',
 
 
         };

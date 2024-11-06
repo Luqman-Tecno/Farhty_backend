@@ -16,14 +16,17 @@ return new class extends Migration {
             $table->integer('capacity')->nullable();
             $table->decimal('latitude', 10, 8)->nullable();
             $table->decimal('longitude', 11, 8)->nullable();
-            $table->foreignIdFor(\App\Models\City::class);
+            $table->foreignId('city_id')->constrained()->onDelete('cascade');
             $table->string('region')->nullable();
             $table->json('shift_prices')->nullable();
-            $table->decimal('deposit_price', 8, 2)->nullable();
+            $table->decimal('deposit_price', 10, 2)->nullable();
             $table->decimal('price_per_child', 8, 2)->nullable();
-            $table->text('amenities')->nullable();
-            $table->foreignIdFor(\App\Models\User::class)->onDelete('cascade');
+            $table->json('amenities')->nullable();
+            $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->json('images')->nullable();
+            $table->text('description')->nullable();
+            $table->boolean('status')->default(true);
+            $table->softDeletes();
             $table->timestamps();
         });
     }

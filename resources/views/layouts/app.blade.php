@@ -8,14 +8,16 @@
         <title>{{ config('app.name', 'Laravel') }}</title>
 
         <!-- Fonts -->
-        <link rel="preconnect" href="https://fonts.bunny.net">
-        <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700&display=swap" rel="stylesheet">
 
         <!-- Scripts -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
 
         <!-- Styles -->
         @livewireStyles
+        @stack('styles')
     </head>
     <body class="font-sans antialiased">
         <x-banner />
@@ -41,5 +43,9 @@
         @stack('modals')
 
         @livewireScripts
+        @stack('scripts')
+
+        <script src="https://cdn.jsdelivr.net/npm/moment@2.29.4/min/moment.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/moment@2.29.4/locale/ar.js"></script>
     </body>
 </html>

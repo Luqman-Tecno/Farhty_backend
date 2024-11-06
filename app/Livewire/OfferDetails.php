@@ -2,46 +2,17 @@
 
 namespace App\Livewire;
 
-use App\Models\WeddingHall;
-
-use App\Service\BookingService;
-use Livewire\Component;
-
-class OfferDetails extends Component
+class OfferDetails extends BaseOfferDetails
 {
-    public $weddingHall;
-    public $selectedDate;
-    public $selectedShift = 'evening'; // Default shift
-    public $showLoginModal = false;
-
-    public function mount(WeddingHall $weddingHall)
+    protected function initializeWeddingHall($weddingHall)
     {
         $this->weddingHall = $weddingHall;
-        $this->selectedDate = now()->format('Y-m-d');
     }
 
-    public function checkAvailability()
+    public function getPrice()
     {
-        if (!auth()->check()) {
-            $this->showLoginModal = true;
-            return;
-        }
-
-        $bookingService = new BookingService();
-
-        $avilabel = $bookingService->isShiftAvailable($this->weddingHall, $this->selectedDate, $this->selectedShift);
-        if (!$avilabel) {
-            session()->flash('error', 'هذي الموعد غير متاح');
-        } else {
-            return redirect()->route('booking.form', [
-                'weddingHall' => $this->weddingHall
-            ]);
-        }
-        // Here you can add logic to check if the date and shift are available
-        // and redirect to booking page or show booking form
-
+        return $this->weddingHall->shift_prices['full_day'] ?? 0;
     }
-
 
     public function render()
     {

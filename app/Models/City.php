@@ -9,4 +9,9 @@ class City extends Model
     protected $fillable = [
         'name',
     ];
+
+    public function weddingHalls()
+    {
+        return $this->hasMany(WeddingHall::class);
+    }
 }

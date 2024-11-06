@@ -2,6 +2,8 @@
 
 namespace App\Providers\Filament;
 
+use App\Filament\HallAdminPanel\Pages\WeddingHallPayments;
+use App\Filament\HallAdminPanel\Widgets\BookingsChart;
 use App\Http\Middleware\HallAdminMiddleware;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -43,11 +45,12 @@ class HallAdminPanelPanelProvider extends PanelProvider
             ->discoverPages(in: app_path('Filament/HallAdminPanel/Pages'), for: 'App\\Filament\\HallAdminPanel\\Pages')
             ->pages([
                 Pages\Dashboard::class,
+                WeddingHallPayments::class,
             ])
             ->discoverWidgets(in: app_path('Filament/HallAdminPanel/Widgets'), for: 'App\\Filament\\HallAdminPanel\\Widgets')
             ->widgets([
-                Widgets\AccountWidget::class,
-                Widgets\FilamentInfoWidget::class,
+                BookingsChart::class,
+              
             ])->plugins([FilamentFullCalendarPlugin::make()])
             ->middleware([
                 EncryptCookies::class,
