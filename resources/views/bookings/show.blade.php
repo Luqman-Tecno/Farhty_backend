@@ -22,59 +22,84 @@
                         </div>
                     @endif
 
-                    <!-- Wedding Hall Images Carousel -->
+                    <!-- Wedding Hall Images -->
                     @if($booking->weddingHall->images && count($booking->weddingHall->images) > 0)
-                        <div class="mb-8" x-data="{ activeSlide: 0, totalSlides: {{ count($booking->weddingHall->images) }} }">
-                            <div class="relative rounded-2xl overflow-hidden h-96">
-                                <div class="flex">
-                                    @foreach($booking->weddingHall->images as $index => $image)
-                                        <div class="absolute w-full h-full transition-opacity duration-300"
-                                             x-show="activeSlide === {{ $index }}"
-                                             x-transition:enter="transition ease-out duration-300"
-                                             x-transition:enter-start="opacity-0 transform scale-95"
-                                             x-transition:enter-end="opacity-100 transform scale-100">
-                                            <img src="{{ asset('storage/' . $image) }}" alt="صورة القاعة" class="w-full h-full object-cover">
-                                        </div>
-                                    @endforeach
-                                </div>
+                        <div class="relative h-[500px] group mb-8" x-data="{ showModal: false, activeSlide: 0, totalSlides: {{ count($booking->weddingHall->images) }} }">
+                            <!-- Main Image -->
+                            <div class="h-[500px] cursor-pointer" @click="showModal = true">
+                                <img src="{{ asset('storage/' . $booking->weddingHall->images[0]) }}" 
+                                     alt="{{ $booking->weddingHall->hall_name }}" 
+                                     class="w-full h-full object-cover">
+                                <div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
                                 
-                                <!-- Navigation Buttons -->
-                                <button @click="activeSlide = (activeSlide - 1 + totalSlides) % totalSlides" 
-                                        class="absolute left-2 top-1/2 transform -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-3 rounded-full transition-all">
-                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
-                                    </svg>
-                                </button>
-                                <button @click="activeSlide = (activeSlide + 1) % totalSlides" 
-                                        class="absolute right-2 top-1/2 transform -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-3 rounded-full transition-all">
-                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
-                                    </svg>
-                                </button>
+                                <!-- Overlay to indicate clickable -->
+                                <div class="absolute inset-0 bg-black/0 hover:bg-black/20 transition-all flex items-center justify-center">
+                                    <span class="text-white bg-black/50 px-4 py-2 rounded-lg opacity-0 group-hover:opacity-100 transition-all">
+                                        عرض جميع الصور
+                                    </span>
+                                </div>
+                            </div>
 
-                                <!-- Dots Indicator -->
-                                <div class="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2">
-                                    @foreach($booking->weddingHall->images as $index => $image)
-                                        <button @click="activeSlide = {{ $index }}" 
-                                                class="w-3 h-3 rounded-full transition-all duration-300"
-                                                :class="activeSlide === {{ $index }} ? 'bg-white scale-110' : 'bg-white/50 hover:bg-white/75'">
+                            <!-- Images Modal -->
+                            <div x-show="showModal" 
+                                 x-transition
+                                 class="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4"
+                                 @click.self="showModal = false">
+                                
+                                <div class="relative w-full max-w-6xl">
+                                    <!-- Close Button -->
+                                    <button @click="showModal = false" 
+                                            class="absolute top-4 right-4 text-white p-2 hover:bg-white/10 rounded-full z-50">
+                                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                        </svg>
+                                    </button>
+
+                                    <!-- Images Slider -->
+                                    <div class="relative h-[80vh]">
+                                        @foreach($booking->weddingHall->images as $index => $image)
+                                            <div class="absolute inset-0 transition-opacity duration-300"
+                                                 x-show="activeSlide === {{ $index }}"
+                                                 x-transition:enter="transition ease-out duration-300"
+                                                 x-transition:enter-start="opacity-0 transform scale-95"
+                                                 x-transition:enter-end="opacity-100 transform scale-100">
+                                                <img src="{{ asset('storage/' . $image) }}" 
+                                                     alt="{{ $booking->weddingHall->hall_name }}" 
+                                                     class="w-full h-full object-contain">
+                                            </div>
+                                        @endforeach
+
+                                        <!-- Navigation Buttons -->
+                                        <button @click="activeSlide = (activeSlide - 1 + totalSlides) % totalSlides" 
+                                                class="absolute left-4 top-1/2 transform -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-3 rounded-full transition-all">
+                                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                                            </svg>
                                         </button>
-                                    @endforeach
+                                        <button @click="activeSlide = (activeSlide + 1) % totalSlides" 
+                                                class="absolute right-4 top-1/2 transform -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-3 rounded-full transition-all">
+                                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                                            </svg>
+                                        </button>
+
+                                        <!-- Dots Indicators -->
+                                        <div class="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2">
+                                            @foreach($booking->weddingHall->images as $index => $image)
+                                                <button @click="activeSlide = {{ $index }}" 
+                                                        class="w-3 h-3 rounded-full transition-all duration-300"
+                                                        :class="activeSlide === {{ $index }} ? 'bg-white scale-110' : 'bg-white/50 hover:bg-white/75'">
+                                                </button>
+                                            @endforeach
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     @else
                         <div class="mb-8">
-                            <div class="relative rounded-2xl overflow-hidden h-96">
-                                <div class="w-full h-96 bg-gray-200 flex items-center justify-center">
-                                    <div class="text-center">
-                                        <svg class="mx-auto h-16 w-16 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
-                                                  d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                                        </svg>
-                                        <p class="mt-2 text-gray-500">لا توجد صور متاحة للقاعة</p>
-                                    </div>
-                                </div>
+                            <div class="h-[500px] bg-gray-100 flex items-center justify-center rounded-2xl">
+                                <span class="text-gray-400 text-lg">لا توجد صورة</span>
                             </div>
                         </div>
                     @endif
@@ -156,7 +181,7 @@
                             <!-- Amenities -->
                             @if($booking->weddingHall->amenities)
                                 <div class="bg-green-50 rounded-xl p-6 shadow-md">
-                                    <h3 class="text-lg font-semibold text-gray-800 mb-4">المميزات</h3>
+                                    <h3 class="text-lg font-semibold text-gray-800 mb-4">المرافق والخدمات</h3>
                                     <div class="grid grid-cols-2 gap-4">
                                         @foreach(explode(',', $booking->weddingHall->amenities) as $amenity)
                                             <div class="flex items-center">
@@ -194,7 +219,7 @@
                                         </button>
                                         @if(!$booking->deposit_paid)
                                             <a href="{{ route('payment.form', $booking) }}" class="block w-full py-3 px-4 bg-green-600 hover:bg-green-700 text-white font-medium rounded-xl transition-colors text-center">
-                                                دفع العربون ({{ number_format($booking->deposit_cost, 2) }} ريال)
+                                                دفع العربون ({{ number_format($booking->deposit_cost, 2) }} د.ل)
                                             </a>
                                         @endif
                                     @endif

@@ -1,0 +1,10 @@
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    
+    # ... existing rules ...
+
+    # Allow HTTP PUT and DELETE methods
+    <IfModule mod_headers.c>
+        Header set Access-Control-Allow-Methods "POST, GET, OPTIONS, PUT, DELETE"
+    </IfModule>
+</IfModule> 

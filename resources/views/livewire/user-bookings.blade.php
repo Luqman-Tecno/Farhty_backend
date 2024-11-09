@@ -118,11 +118,11 @@
                         <div class="space-y-4">
                             <div class="flex items-center justify-between">
                                 <span class="text-sm text-gray-600">العربون</span>
-                                <span class="font-semibold text-emerald-600">{{ number_format($booking->deposit_cost, 2) }} ر.س</span>
+                                <span class="font-semibold text-emerald-600">{{ number_format($booking->deposit_cost, 2) }} د.ل</span>
                             </div>
                             <div class="flex items-center justify-between">
                                 <span class="text-sm text-gray-600">المبلغ الإجمالي</span>
-                                <span class="font-semibold text-emerald-600">{{ number_format($booking->total_cost, 2) }} ر.س</span>
+                                <span class="font-semibold text-emerald-600">{{ number_format($booking->total_cost, 2) }} د.ل</span>
                             </div>
                             <div class="flex items-center justify-between">
                                 <span class="text-sm text-gray-600">حالة العربون</span>

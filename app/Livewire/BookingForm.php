@@ -2,6 +2,7 @@
 
 namespace App\Livewire;
 
+use App\Enum\BookingStatusEnum;
 use Livewire\Component;
 use App\Models\WeddingHall;
 use App\Service\BookingService;
@@ -107,7 +108,7 @@ class BookingForm extends Component
                 'additional_services' => array_filter($this->additionalServices),
                 'total_cost' => $this->priceBreakdown['total'] ?? 0,
                 'deposit_amount' => $this->priceBreakdown['deposit_required'] ?? 0,
-                'status' => 'pending'
+                'status' => BookingStatusEnum::Pending->value
             ];
 
             $result = $bookingService->processBooking(

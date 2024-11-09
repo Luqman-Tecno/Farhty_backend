@@ -13,6 +13,7 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
+
  class BookingService
 {
     public function processBooking(User $user, WeddingHall $weddingHall, array $bookingData)
@@ -51,8 +52,9 @@ use Illuminate\Validation\ValidationException;
                     'end_time' => $this->getShiftEndTime($bookingData['shift']),
                     'children_count' => $childrenCount,
                     'total_cost' => $totalCost,
+                    'notes' => $bookingData['notes'],
                     'deposit_cost' => $depositAmount,
-                    'status' => BookingStatusEnum::Pending,
+                    'status' => BookingStatusEnum::Pending->value,
                 ]);
 
                 $booking->save();
@@ -240,10 +242,11 @@ use Illuminate\Validation\ValidationException;
         }
     }
 
-    public function payDeposit(Booking $booking)
+    public function payDeposit(Booking $booking )
     {
         return DB::transaction(function () use ($booking) {
             try {
+
                 if ($booking->status !== BookingStatusEnum::Pending->value) {
                     throw new \Exception('لا يمكن دفع التأمين - حالة الحجز غير صحيحة');
                 }

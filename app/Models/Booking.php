@@ -22,6 +22,7 @@ class Booking extends Model
         'deposit_paid',
         'children_count',
         'status',
+        'notes',
     ];
 
     protected $casts = [
@@ -38,7 +39,7 @@ class Booking extends Model
 
     public function weddingHall(): BelongsTo
     {
-        return $this->belongsTo(WeddingHall::class);
+        return $this->belongsTo(WeddingHall::class, 'wedding_hall_id');
     }
 
     public function payments()

@@ -1,47 +1,75 @@
 <div class="container mx-auto p-4 lg:p-8" dir="rtl">
     <div class="bg-white rounded-2xl shadow-xl overflow-hidden">
-        <!-- Image Gallery -->
-        <div class="relative h-[500px] group">
+        <!-- Image Gallery - Single Image Display -->
+        <div class="relative h-[500px] group" x-data="{ showModal: false, activeSlide: 0, totalSlides: {{ count($weddingHall->images) }} }">
             @if($weddingHall->images && count($weddingHall->images) > 0)
-                <div class="mb-8" x-data="{ activeSlide: 0, totalSlides: {{ count($weddingHall->images) }} }">
-                    <div class="relative h-[500px] overflow-hidden rounded-b-2xl">
-                        <div class="flex h-full">
+                <!-- Main Image -->
+                <div class="h-[500px] cursor-pointer" @click="showModal = true">
+                    <img src="{{ asset(\Illuminate\Support\Facades\Storage::url($weddingHall->images[0])) }}" 
+                         alt="{{ $weddingHall->hall_name }}" 
+                         class="w-full h-full object-cover">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
+                    
+                    <!-- Overlay to indicate clickable -->
+                    <div class="absolute inset-0 bg-black/0 hover:bg-black/20 transition-all flex items-center justify-center">
+                        <span class="text-white bg-black/50 px-4 py-2 rounded-lg opacity-0 group-hover:opacity-100 transition-all">
+                            عرض جميع الصور
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Images Modal -->
+                <div x-show="showModal" 
+                     x-transition
+                     class="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4"
+                     @click.self="showModal = false">
+                    
+                    <div class="relative w-full max-w-6xl">
+                        <!-- Close Button -->
+                        <button @click="showModal = false" 
+                                class="absolute top-4 right-4 text-white p-2 hover:bg-white/10 rounded-full z-50">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                            </svg>
+                        </button>
+
+                        <!-- Images Slider -->
+                        <div class="relative h-[80vh]">
                             @foreach($weddingHall->images as $index => $image)
-                                <div class="absolute w-full h-full transition-opacity duration-300"
+                                <div class="absolute inset-0 transition-opacity duration-300"
                                      x-show="activeSlide === {{ $index }}"
                                      x-transition:enter="transition ease-out duration-300"
                                      x-transition:enter-start="opacity-0 transform scale-95"
                                      x-transition:enter-end="opacity-100 transform scale-100">
                                     <img src="{{ asset(\Illuminate\Support\Facades\Storage::url($image)) }}" 
                                          alt="{{ $weddingHall->hall_name }}" 
-                                         class="w-full h-full object-cover">
-                                    <div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
+                                         class="w-full h-full object-contain">
                                 </div>
                             @endforeach
-                        </div>
-                        
-                        <!-- أزرار التنقل -->
-                        <button @click="activeSlide = (activeSlide - 1 + totalSlides) % totalSlides" 
-                                class="absolute left-2 top-1/2 transform -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-3 rounded-full transition-all">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
-                            </svg>
-                        </button>
-                        <button @click="activeSlide = (activeSlide + 1) % totalSlides" 
-                                class="absolute right-2 top-1/2 transform -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-3 rounded-full transition-all">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
-                            </svg>
-                        </button>
 
-                        <!-- مؤشرات النقاط -->
-                        <div class="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2">
-                            @foreach($weddingHall->images as $index => $image)
-                                <button @click="activeSlide = {{ $index }}" 
-                                        class="w-3 h-3 rounded-full transition-all duration-300"
-                                        :class="activeSlide === {{ $index }} ? 'bg-white scale-110' : 'bg-white/50 hover:bg-white/75'">
-                                </button>
-                            @endforeach
+                            <!-- Navigation Buttons -->
+                            <button @click="activeSlide = (activeSlide - 1 + totalSlides) % totalSlides" 
+                                    class="absolute left-4 top-1/2 transform -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-3 rounded-full transition-all">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                                </svg>
+                            </button>
+                            <button @click="activeSlide = (activeSlide + 1) % totalSlides" 
+                                    class="absolute right-4 top-1/2 transform -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-3 rounded-full transition-all">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                                </svg>
+                            </button>
+
+                            <!-- Dots Indicators -->
+                            <div class="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2">
+                                @foreach($weddingHall->images as $index => $image)
+                                    <button @click="activeSlide = {{ $index }}" 
+                                            class="w-3 h-3 rounded-full transition-all duration-300"
+                                            :class="activeSlide === {{ $index }} ? 'bg-white scale-110' : 'bg-white/50 hover:bg-white/75'">
+                                    </button>
+                                @endforeach
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -74,7 +102,7 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                               d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
                     </svg>
-                    <span class="text-lg">{{ $weddingHall->city->name }} - {{ $weddingHall->region }}</span>
+                    <span class="text-lg">{{ $weddingHall->city->name_ar }} - {{ $weddingHall->region }}</span>
                 </div>
             </div>
 
@@ -100,6 +128,23 @@
                 </div>
             </div>
 
+            <!-- Amenities -->
+            @if($weddingHall->amenities)
+                <div class="mt-6">
+                    <h3 class="text-2xl font-bold text-gray-900 mb-6">المرافق والخدمات</h3>
+                    <div class="grid grid-cols-2 lg:grid-cols-3 gap-6">
+                        @foreach(explode(',', $weddingHall->amenities) as $amenity)
+                            <div class="flex items-center">
+                                <svg class="h-5 w-5 text-green-500 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                </svg>
+                                <span>{{ trim($amenity) }}</span>
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
+            @endif
+
             <!-- Booking Section -->
             <div class="mt-10 bg-gradient-to-br from-purple-50 to-purple-100/50 p-8 rounded-2xl border border-purple-100">
                 <h3 class="text-2xl font-bold text-purple-900 mb-6">مواعيد الحجز المتاحة</h3>
@@ -122,20 +167,9 @@
                 @endif
             </div>
 
-            <!-- Amenities -->
-            @if($weddingHall->amenities)
-                <div class="mt-10">
-                    <h3 class="text-2xl font-bold text-gray-900 mb-6">المميزات</h3>
-                    <div class="grid grid-cols-2 lg:grid-cols-3 gap-6">
-                        <div class="flex items-center gap-3 bg-gray-50 p-4 rounded-xl">
-                            <svg class="w-5 h-5 text-purple-600" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
-                            </svg>
-                            <span class="text-gray-700">{{ $weddingHall->amenities }}</span>
-                        </div>
-                    </div>
-                </div>
-            @endif
+           
+
+
         </div>
     </div>
 

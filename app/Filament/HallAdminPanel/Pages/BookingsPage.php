@@ -59,7 +59,7 @@ class BookingsPage extends Page implements HasTable
                     ]),
                 TextColumn::make('total_cost')
                     ->label('التكلفة الإجمالية')
-                    ->money('lyd')
+                    ->prefix('د.ل')
                     ->sortable(),
             ])
             ->filters([

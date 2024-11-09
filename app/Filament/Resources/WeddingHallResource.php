@@ -16,6 +16,7 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Schema;
 
 class WeddingHallResource extends Resource
 {
@@ -53,10 +54,7 @@ class WeddingHallResource extends Resource
                                 Forms\Components\TextInput::make('region')
                                     ->label('المنطقة')
                                     ->required(),
-                                Forms\Components\Textarea::make('description')
-                                    ->label('وصف القاعة')
-                                    ->rows(3)
-                                    ->columnSpan(2),
+                               
                                 Forms\Components\Toggle::make('status')
                                     ->label('حالة القاعة')
                                     ->default(true)
@@ -125,8 +123,11 @@ class WeddingHallResource extends Resource
                                 ->multiple()
                                 ->maxFiles(5)
                                 ->image()
-                                ->imageResizeMode('cover')
-                                ->imageCropAspectRatio('16:9')
+                                ->visibility('public')
+                                ->preserveFilenames()
+                                ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp'])
+                                ->maxSize(5120)
+                                ->downloadable()
                         ]),
                 ])
                     ->columnSpan('full')
@@ -136,39 +137,25 @@ class WeddingHallResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
-            ->columns([
-                Tables\Columns\Layout\Stack::make([
-                    Tables\Columns\Layout\Panel::make([
-                        Tables\Columns\ImageColumn::make('images')
-                            ->label('صور القاعة')
-                            ->circular()
-                            ->stacked()
-                            ->limit(3),
-                        Tables\Columns\TextColumn::make('hall_name')
-                            ->label('اسم القاعة')
-                            ->searchable()
-                            ->sortable()
-                            ->weight('bold')
-                            ->size('lg'),
-                        Tables\Columns\TextColumn::make('description')
-                            ->label('الوصف')
-                            ->limit(50)
-                            ->searchable(),
-                        Tables\Columns\TextColumn::make('city.name_ar')
-                            ->label('المدينة')
-                            ->searchable(),
-                        Tables\Columns\TextColumn::make('region')
-                            ->label('المنطقة')
-                            ->searchable(),
-                        Tables\Columns\TextColumn::make('shift_prices.'.BookingShiftEnum::FULL_DAY->value)
-                            ->label('السعر الكامل')
-                            ->money('lyd'),
-                        Tables\Columns\IconColumn::make('status')
-                            ->label('الحالة')
-                            ->boolean(),
-                    ])->collapsible(),
-                ]),
-            ])
+        ->columns([
+            Tables\Columns\TextColumn::make('hall_name')
+                ->label('اسم القاعة')
+                ->searchable()
+                ->sortable()
+                ->weight('bold'),
+            Tables\Columns\TextColumn::make('city.name_ar')
+                ->label('المدينة')
+                ->searchable(),
+            Tables\Columns\TextColumn::make('region')
+                ->label('المنطقة')
+                ->searchable(),
+            Tables\Columns\TextColumn::make('shift_prices.'.BookingShiftEnum::FULL_DAY->value)
+                ->label('السعر الكامل')
+                ->prefix('د.ل'),
+            Tables\Columns\IconColumn::make('status')
+                ->label('الحالة')
+                ->boolean(),
+        ])
             ->filters([
                 Tables\Filters\TrashedFilter::make(),
                 Tables\Filters\SelectFilter::make('city')
@@ -181,7 +168,99 @@ class WeddingHallResource extends Resource
                     ->falseLabel('غير نشط'),
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
+                Tables\Actions\EditAction::make()->form(function (Form $form) {
+                    return $form->schema([ Forms\Components\Wizard::make([
+                        Forms\Components\Wizard\Step::make('معلومات القاعة الأساسية')
+                            ->schema([
+                                Forms\Components\Grid::make([])->schema([
+                                    Forms\Components\Select::make('user_id')
+                                        ->label('المالك')
+                                        ->options(User::where('type', UserTypeEnum::WEDDING_ADMIN->value)->pluck('name', 'id'))
+                                        ->required(),
+                                    Forms\Components\TextInput::make('hall_name')
+                                        ->label('اسم القاعة')
+                                        ->required(),
+                                    Forms\Components\TextInput::make('capacity')
+                                        ->label('السعة')
+                                        ->required()
+                                        ->numeric(),
+                                    Forms\Components\Select::make('city_id')
+                                        ->label('المدينة')
+                                        ->options(City::pluck('name_ar', 'id'))
+                                        ->required(),
+                                    Forms\Components\TextInput::make('region')
+                                        ->label('المنطقة')
+                                        ->required(),
+                                
+                                    Forms\Components\Toggle::make('status')
+                                        ->label('حالة القاعة')
+                                        ->default(true)
+                                        ->inline(false),
+                                ])->columns(2),
+                            ]),
+                        Forms\Components\Wizard\Step::make('الأسعار والمميزات')
+                            ->schema([
+                                Forms\Components\Section::make('اسعار الفترات')
+                                    ->statePath('shift_prices')
+                                    ->schema([
+                                        Forms\Components\TextInput::make(BookingShiftEnum::DAY->value)
+                                            ->label('صباح')
+                                            ->numeric()
+                                            ->prefix('د.ل')
+                                            ->inputMode('decimal')
+                                            ->step(0.01),
+                                        Forms\Components\TextInput::make(BookingShiftEnum::NIGHT->value)
+                                            ->label('مساء')
+                                            ->numeric()
+                                            ->prefix('د.ل')
+                                            ->inputMode('decimal')
+                                            ->step(0.01),
+                                        Forms\Components\TextInput::make(BookingShiftEnum::FULL_DAY->value)
+                                            ->label('اليوم كله')
+                                            ->numeric()
+                                            ->prefix('د.ل')
+                                            ->inputMode('decimal')
+                                            ->step(0.01),
+                                    ])->columns(3),
+                                Forms\Components\Grid::make()->schema([
+                                    Forms\Components\TextInput::make('deposit_price')
+                                        ->label('قيمة العربون')
+                                        ->required()
+                                        ->numeric()
+                                        ->prefix('د.ل')
+                                        ->inputMode('decimal')
+                                        ->step(0.01),
+                                    Forms\Components\TextInput::make('price_per_child')
+                                        ->label('تكلفة الطفل الواحد')
+                                        ->required()
+                                        ->numeric()
+                                        ->prefix('د.ل')
+                                        ->inputMode('decimal')
+                                        ->step(0.01),
+                                    Forms\Components\TagsInput::make('amenities')
+                                        ->label('المرافق والخدمات')
+                                        ->separator(',')
+                                        ->columnSpan(2),
+                                ])->columns(2),
+                            ]),
+                       
+                        Forms\Components\Wizard\Step::make('الصور')
+                            ->schema([
+                                Forms\Components\FileUpload::make('images')
+                                    ->disk('public')
+                                    ->directory('hall_images')
+                                    ->multiple()
+                                    ->maxFiles(5)
+                                    ->image()
+                                    ->visibility('public')
+                                    ->preserveFilenames()
+                                    ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp'])
+                                    ->maxSize(5120)
+                                    ->downloadable()
+                            ]),
+                    ])
+                        ->columnSpan('full')]);
+                }),
                 Tables\Actions\ViewAction::make(),
                 Tables\Actions\DeleteAction::make(),
             ])
@@ -193,19 +272,12 @@ class WeddingHallResource extends Resource
             ]);
     }
 
-    public static function getRelations(): array
-    {
-        return [
-            OfferSalesRelationManager::make(),
-        ];
-    }
 
     public static function getPages(): array
     {
         return [
             'index' => Pages\ListWeddingHalls::route('/'),
             'create' => Pages\CreateWeddingHall::route('/create'),
-            'edit' => Pages\EditWeddingHall::route('/{record}/edit'),
             'view' => Pages\ViewWeddingHalls::route('/{record}')
         ];
     }

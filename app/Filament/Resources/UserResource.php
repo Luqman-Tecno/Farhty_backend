@@ -18,6 +18,7 @@ use Filament\Tables\Actions\EditAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Validation\Rules\Password;
+use Spatie\Permission\Models\Role;
 
 class UserResource extends Resource
 {
@@ -54,7 +55,9 @@ class UserResource extends Resource
                     ->maxLength(255),
                 Select::make('type')->label("النوع")
                     ->options(UserTypeEnum::class)
-                    ->required()
+                    ->required(),
+                Select::make('role')->label("الدور")
+                   ->relationship('roles', 'name')
             ]);
     }
 

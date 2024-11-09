@@ -9,6 +9,11 @@ class CreateOfferSale extends CreateRecord
 {
     protected static string $resource = OfferSaleResource::class;
 
+    public function mutateFormDataBeforeCreate(array $data): array
+    {
+        $data['wedding_hall_id'] = auth()->user()->weddingHall->id;
+        return $data;
+    }
     protected function getHeaderActions(): array
     {
         return [

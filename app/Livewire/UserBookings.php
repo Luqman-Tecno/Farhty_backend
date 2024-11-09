@@ -18,9 +18,12 @@ class UserBookings extends Component
     public function loadBookings()
     {
         // Fetch bookings for the authenticated user
-        $this->bookings = Booking::where('user_id', Auth::id())
+        $this->bookings = Booking::with('weddingHall')
+            ->where('user_id', auth()->user()->id)
             ->orderBy('booking_date', 'desc')
             ->get();
+
+      
     }
 
     public function render()

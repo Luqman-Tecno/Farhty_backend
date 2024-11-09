@@ -33,7 +33,30 @@ class PaymentForm extends Component
         'fullName' => 'required_if:paymentMethod,credit_card,debit_card|string|max:255',
         'cardNumber' => 'string',
         'cardExpiration' => 'required_if:paymentMethod,credit_card,debit_card|date_format:m/y',
-        'cvv' => 'required_if:paymentMethod,credit_card,debit_card|numeric|digits:3',
+        'cvv' => 'required_if:paymentMethod,credit_card,debit_card|numeric|digits:4',
+    ];
+
+    protected $messages = [
+        'amount.required' => 'يرجى إدخال قيمة المبلغ',
+        'amount.numeric' => 'يجب أن يكون المبلغ رقماً',
+        'amount.min' => 'يجب أن يكون المبلغ أكبر من صفر',
+
+        'paymentMethod.required' => 'يرجى اختيار طريقة الدفع',
+        'paymentMethod.in' => 'طريقة الدفع المختارة غير صالحة',
+
+        'fullName.required_if' => 'يرجى إدخال اسم حامل البطاقة',
+        'fullName.string' => 'يجب أن يكون الاسم نصاً',
+        'fullName.max' => 'يجب ألا يتجاوز الاسم 255 حرفاً',
+
+        'cardNumber.required_if' => 'يرجى إدخال رقم البطاقة',
+        'cardNumber.string' => 'يجب أن يكون رقم البطاقة نصاً',
+
+        'cardExpiration.required_if' => 'يرجى إدخال تاريخ انتهاء البطاقة',
+        'cardExpiration.date_format' => 'صيغة تاريخ الانتهاء غير صحيحة (الصيغة الصحيحة: شهر/سنة)',
+
+        'cvv.required_if' => 'يرجى إدخال رمز الأمان CVV',
+        'cvv.numeric' => 'يجب أن يكون رمز الأمان أرقاماً فقط',
+        'cvv.digits' => 'يجب أن يتكون رمز الأمان من 4 أرقام'
     ];
 
     public function mount(Booking $booking)

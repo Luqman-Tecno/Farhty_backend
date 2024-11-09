@@ -12,7 +12,7 @@ class ViewWeddingHalls extends ViewRecord
 {
     protected static string $resource = WeddingHallResource::class;
 
-    protected static string $view = 'components.list-wedding-halls';
+    protected static string $view = 'filament.resources.wedding-halls.pages.list-wedding-halls';
 
     protected function getHeaderActions(): array
     {

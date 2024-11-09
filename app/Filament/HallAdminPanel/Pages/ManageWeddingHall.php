@@ -11,6 +11,7 @@ use Filament\Forms\Components\Grid;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TagsInput;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\View;
@@ -79,10 +80,10 @@ class ManageWeddingHall extends Page implements HasForms
                     ->label('المدينة')
                     ->required()
                     ->options(City::all()->pluck('name_ar', 'id')),
-                Textarea::make('amenities')
-                    ->label('المرافق')
-                    ->required()
-                    ->maxLength(65535),
+                    TagsInput::make('amenities')
+                    ->label('المرافق والخدمات')
+                    ->separator(',')
+                    ->columnSpan(2),
             ])
             ->columns(2);
     }

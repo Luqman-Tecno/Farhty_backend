@@ -22,6 +22,7 @@ return new class extends Migration {
             $table->decimal('total_cost', 10, 2);
             $table->boolean('deposit_paid')->default(false);
             $table->integer('children_count');
+            $table->text('notes')->nullable();
             $table->enum('status', \App\Enum\BookingStatusEnum::values());
             $table->timestamps();
         });

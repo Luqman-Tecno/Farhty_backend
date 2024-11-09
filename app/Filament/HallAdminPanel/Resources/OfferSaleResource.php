@@ -11,6 +11,7 @@ use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Form;
+use Filament\Models\Contracts\FilamentUser;
 use Filament\Resources\Resource;
 use Filament\Tables\Actions\BulkActionGroup;
 use Filament\Tables\Actions\DeleteAction;
@@ -42,11 +43,7 @@ class OfferSaleResource extends Resource
     {
         return $form
             ->schema([
-                Select::make('wedding_hall_id')
-                    ->label('القاعة')
-                    ->options(WeddingHall::where('user_id', auth()->id())->pluck('hall_name', 'id'))
-                    ->required()
-                    ->searchable(),
+            
 
                 TextInput::make('sale_price')
                     ->label('سعر العرض')
@@ -62,16 +59,6 @@ class OfferSaleResource extends Resource
                     ->label('تاريخ نهاية العرض')
                     ->required(),
 
-                TextInput::make('discount_percentage')
-                    ->label('نسبة الخصم')
-                    ->numeric()
-                    ->suffix('%')
-                    ->maxValue(100)
-                    ->minValue(0),
-
-                Textarea::make('description')
-                    ->label('وصف العرض')
-                    ->rows(3),
 
                 Toggle::make('status')
                     ->label('حالة العرض')

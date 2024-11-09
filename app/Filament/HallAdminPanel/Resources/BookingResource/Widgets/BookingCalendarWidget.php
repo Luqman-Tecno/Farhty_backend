@@ -40,13 +40,13 @@ class BookingCalendarWidget extends FullCalendarWidget
 
     public function fetchEvents(array $fetchInfo): array
     {
-        return Booking::with('weddingHall')->where('status', BookingStatusEnum::Pending->value)
+        return Booking::with('weddingHall')->where('status' , BookingStatusEnum::Booked->value)
             ->get()
             ->map(function (Booking $task) {
                 return [
                     'id' => $task->id,
                     'title' => $task->weddingHall->hall_name,
-                    'start' => $task->start_time,
+                    'start' => $task->booking_date,
                     'end' => $task->end_time,
                 ];
             })
@@ -85,6 +85,7 @@ class BookingCalendarWidget extends FullCalendarWidget
                                     DatePicker::make('booking_date')
                                         ->required()
                                         ->label('تاريخ الحجز'),
+
                                     Select::make('shift')
                                         ->options([
                                             BookingShiftEnum::DAY->value => 'فترة صباحية (8 ص - 5 م)',
@@ -133,39 +134,11 @@ class BookingCalendarWidget extends FullCalendarWidget
                                         ->disabled()
                                         ->live()
                                         ->reactive()
+                                        ->afterStateUpdated(function ($set, $get) {
+                                            $this->calculateAndSetPrices($set, $get);
+                                        })
                                         ->afterStateHydrated(function ($set, $get) {
-                                            if (!$this->weddingHall) {
-                                                return 0;
-                                            }
-
-                                            $shift = $get('shift');
-                                            $childrenCount = (int) $get('children_count') ?: 0;
-                                            $selectedServices = $get('additional_services') ?? [];
-
-                                            $shiftPrices = $this->weddingHall->shift_prices;
-                                            $shiftPrice = $shiftPrices[$shift] ?? 0;
-                                            $pricePerChild = $this->weddingHall->price_per_child ?: 0;
-                                            $childrenCost = $childrenCount * $pricePerChild;
-                                            
-                                            $servicesCost = 0;
-                                            if (!empty($selectedServices)) {
-                                                $servicesCost = Services::whereIn('id', $selectedServices)
-                                                    ->where('wedding_hall_id', $this->weddingHall->id)
-                                                    ->sum('price');
-                                            }
-
-                                            $totalCost = $shiftPrice + $childrenCost + $servicesCost;
-                                            $set('total_cost', $totalCost);
-                                            
-                                            // تحديث العربون
-                                            $depositPercentage = $this->weddingHall->deposit_percentage ?: 30;
-                                            $set('deposit_cost', ($totalCost * $depositPercentage) / 100);
-                                            
-                                            // تحديث تكلفة الأطفال
-                                            $set('children_cost', $childrenCost);
-                                            
-                                            // تحديث تكلفة الخدمات
-                                            $set('services_cost', $servicesCost);
+                                            $this->calculateAndSetPrices($set, $get);
                                         })
                                         ->label('التكلفة الإجمالية'),
                                         
@@ -279,13 +252,13 @@ class BookingCalendarWidget extends FullCalendarWidget
                         // إنشاء الحجز
                         $data['start_time'] = $this->getShiftStartTime($data['shift']);
                         $data['end_time'] = $this->getShiftEndTime($data['shift']);
-                        
+                        $data['notes'] = '';
+                  
                         $booking = $this->bookingService->processBooking(
                             auth()->user(),
                             auth()->user()->weddingHall,
                             $data
                         );
-
                         if ($booking['status'] === 'error') {
                             throw new \Exception($booking['message']);
                         }
@@ -294,15 +267,16 @@ class BookingCalendarWidget extends FullCalendarWidget
                         $payment = Payment::create([
                             'booking_id' => $booking['booking']->id,
                             'payment_date' => now(),
-                            'amount' => $data['amount'],
+                            'amount' => $data['amount'] ?? 0,
                             'payment_method' => $data['payment_method'],
                             'wedding_hall_id' => $this->weddingHall->id,
                             'payment_type' => 'deposit',
                             'status' => 'completed'
                         ]);
-
+                     
+                  
                         // تحديث حالة الحجز بعد الدفع
-                        $this->bookingService->payDeposit($booking['booking']);
+                       $datas = $this->bookingService->payDeposit($booking['booking']);
 
                         DB::commit();
                         
@@ -351,5 +325,35 @@ class BookingCalendarWidget extends FullCalendarWidget
     private function calculateRequiredDeposit($totalCost): float
     {
         return ($totalCost * ($this->weddingHall->deposit_percentage ?? 30)) / 100;
+    }
+
+    private function calculateAndSetPrices($set, $get): void
+    {
+        if (!$this->weddingHall) {
+            return;
+        }
+
+        $shift = $get('shift');
+        $childrenCount = (int) $get('children_count') ?: 0;
+        $selectedServices = $get('additional_services') ?? [];
+
+        $shiftPrices = $this->weddingHall->shift_prices;
+        $shiftPrice = $shiftPrices[$shift] ?? 0;
+        $pricePerChild = $this->weddingHall->price_per_child ?: 0;
+        $childrenCost = $childrenCount * $pricePerChild;
+        
+        $servicesCost = 0;
+        if (!empty($selectedServices)) {
+            $servicesCost = Services::whereIn('id', $selectedServices)
+                ->where('wedding_hall_id', $this->weddingHall->id)
+                ->sum('price');
+        }
+
+        $totalCost = $shiftPrice + $childrenCost + $servicesCost;
+        
+        $set('total_cost', $totalCost);
+        $set('deposit_cost', ($totalCost * ($this->weddingHall->deposit_percentage ?: 30)) / 100);
+        $set('children_cost', $childrenCost);
+        $set('services_cost', $servicesCost);
     }
 }
